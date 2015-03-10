@@ -1,0 +1,15 @@
+[package]
+
+name = "balisong"
+version = "0.0.1"
+authors = [ "Your name <you@example.com>" ]
+
+[[bin]]
+
+name = "balisong"
+
+[dependencies.time]
+git = "https://github.com/rust-lang/time"
+
+
+[features]
