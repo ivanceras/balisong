@@ -1,8 +1,6 @@
 use shape::Shape;
 use octree::Octree;
 use location;
-use color::Color;
-use voxel::Voxel;
 use std::num::Float;
 
 //voxelize a shape into a required lod
@@ -38,18 +36,7 @@ pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->Octree{
 			for z in 0..limit{
 				if shape.is_inside(x as i64, y as i64, z as i64){
 					let loc =  location::from_xyz(required_lod, x, y, z);
-					/*
-					let r = 255 - ((x as f64 / limit as f64) * 255.0).round() as u8;
-					let g = 255 - ((y as f64 / limit as f64) * 255.0).round() as u8;
-					let b = 255 - ((z as f64 / limit as f64) * 255.0).round() as u8;
-					*/
-					let r = ((x as f64 / limit as f64) * 255.0).round() as u8;
-					let g = ((y as f64 / limit as f64) * 255.0).round() as u8;
-					let b = ((z as f64 / limit as f64) * 255.0).round() as u8;
-					let color = Color{r:r,g:g,b:b,a:255};
-					let normal = shape.normal(x as i64, y as i64, z as i64);
-					let voxel = Voxel::new(color, normal, 0, 0);
-					root.put_tree(loc, voxel);//move voxel and location to the octree
+					root.set_tree(loc);//move voxel and location to the octree
 				}
 			}
 		}

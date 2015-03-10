@@ -4,12 +4,14 @@ name = "balisong"
 version = "0.0.1"
 authors = [ "Your name <you@example.com>" ]
 
-[[bin]]
+[lib]
+name = "balisong"
 
+[[bin]]
 name = "balisong"
 
 [dependencies.time]
-git = "https://github.com/rust-lang/time"
 
+[dependencies.regex]
 
 [features]

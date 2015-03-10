@@ -8,6 +8,7 @@ use std::num::Float;
 use raytracer;
 use model::Model;
 use color::Color;
+use std::old_io::File;
 
 pub struct Scene{
 	objects:Vec<Model>,
@@ -59,10 +60,35 @@ impl Scene{
 		let pixel_vector = screen.at_pixel(x, y);
 		let pixelv_yaw_rotated = pixel_vector.rotate_at_y(self.camera.yaw);
 		let pixelv_pitch_rotated = pixelv_yaw_rotated.rotate_at_x(self.camera.pitch);
-		let pixel_ray = Ray::new(&self.camera.location, pixelv_pitch_rotated);
+		let pixelv_roll_rotated = pixelv_pitch_rotated.rotate_at_z(self.camera.roll);
+		let pixel_ray = Ray::new(&self.camera.location, pixelv_roll_rotated);
 		let model = &self.objects[0];
 		let color = raytracer::trace(lod, self.view_lod, pixel_ray, model, model.scale, max_distance);
 		color
+	}
+	
+	//save pixels to file
+	pub fn save_to_file(&self, filename:String, pixels:Vec<Color>, width:i64, height:i64){
+		let mut file = File::create(&Path::new(&filename));
+		let header = String::from_str("P6\n# CREATOR: lee\n");
+		let size = format!("{} {}\n255\n", width, height);
+	
+		let mut buffer = Vec::new();
+	    buffer.push_all(header.into_bytes().as_slice());
+	    buffer.push_all(size.into_bytes().as_slice());
+	    
+		for p in 0..pixels.len() {
+			buffer.push(pixels[p].r);
+			buffer.push(pixels[p].g);
+			buffer.push(pixels[p].b);
+		}
+		file.write_all(buffer.as_slice());
+		println!("Saved to {}",&filename);
+	}
+	
+	pub fn render_to_file(&self, lod:u8, screen:&Screen, filename:String){
+		let pixels = self.render(lod, screen);
+		self.save_to_file(filename, pixels, screen.width, screen.height);
 	}
 	
 }

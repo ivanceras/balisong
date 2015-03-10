@@ -48,14 +48,14 @@ impl Vector{
 		Vector::new(x,y,z)
 	}
 	
-	pub fn add(&self, vector:Vector)->Vector{
+	pub fn add(&self, vector:&Vector)->Vector{
 		let x = self.x + vector.x as f64;
 		let y = self.y + vector.y as f64;
 		let z = self.z + vector.z as f64;
 		Vector::new(x,y,z)
 	}
 	
-	pub fn subtract(&self, vector:Vector)->Vector{
+	pub fn subtract(&self, vector:&Vector)->Vector{
 		let x = self.x - vector.x as f64;
 		let y = self.y - vector.y as f64;
 		let z = self.z - vector.z as f64;

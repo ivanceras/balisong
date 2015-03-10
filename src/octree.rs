@@ -1,5 +1,3 @@
-use voxel::Voxel;
-use std::option::Option;
 use std::fmt;
 use location;
 use color::Color;
@@ -10,7 +8,6 @@ use color::Color;
 //
 pub struct Octree{
 	value:u8,
-	voxel:Option<Voxel>,//optional content
 	children:Vec<Octree>//leaf only when there is no children content, children.len() == 0,
 }
 
@@ -18,31 +15,32 @@ pub struct Octree{
 impl Octree{
 	
 	pub fn new()->Octree{
-		Octree{value:0, voxel:None, children:Vec::new()}
+		Octree{value:0, children:Vec::new()}
 	}
 	
-	pub fn put_tree(&mut self, location:Vec<u8>, voxel:Voxel){
+	pub fn set_tree(&mut self, location:Vec<u8>){
 		let mut m_location = location.clone();
-		self.put_tree_internal(&mut m_location, &voxel)
+		self.set_tree_internal(&mut m_location)
 	}
 	
 	//recursive call without recursive cloning the location
-	fn put_tree_internal(&mut self, location:&mut Vec<u8>, voxel:&Voxel){
+	fn set_tree_internal(&mut self, location:&mut Vec<u8>){
 		let root_loc = location[0];
 		if self.is_empty(root_loc){
-			self.put(root_loc, None);
+			self.set(root_loc);
 		}
 		let node = self.get_as_mut(root_loc);//here is the node
 		if location.len() == 1 {//this is the last
 			let last = location.len() - 1;
-			node.put(location[last], Some(voxel.clone()));
+			node.set(location[last]);
 		}
 		location.remove(0);
 		if location.len() > 0 {
-			node.put_tree_internal(location, &voxel);
+			node.set_tree_internal(location);
 		}
 	}
 	
+	/* TODO: this must be implemented somewhere
 	pub fn get_voxel(&self, location:Vec<u8>)->Voxel{
 		let octree = self.get_tree(location);
 		if octree.voxel.is_some(){
@@ -53,6 +51,7 @@ impl Octree{
 		}
 		panic!("No voxel content!");
 	}
+	*/
 	
 	fn get_tree(&self, location:Vec<u8>)->&Octree{
 		let mut m_location = location.clone();
@@ -76,20 +75,29 @@ impl Octree{
 	}
 	
 	
-	pub fn put(&mut self, location:u8, voxel:Option<Voxel>){
-		//println!("putting voxel..at {}, location: {:8b}", self, location);
+	//TODO: if 8 children at this location is set with same material, unset this location
+	// then traverse to the parent location via `location.remove(last)`, then set the parent material there
+	//other optimization: Whatever has the most material count in a voxel wins, then gets to set the parent
+	//other option: Blending of materials, blend the material properties which makes it homogeneous material.
+	//use only blending when all of the other material is different from each other.
+	//50%water + 50%dirt = mud
+	//90%water + 10%dirt = murky water
+	//air + dirt = dust
+	//fire + dirt = lava
+	//cement + water = concrete
+	//titanium + aluminum = alloy, hardness of material is recalculated
+	//iron + oxygen = rust
+	
+	pub fn set(&mut self, location:u8){
 		let index = self.index_of(location);
 		if self.is_empty(location){
 			self.value = self.value | location;
 			self.children.push(Octree::new());
-			self.voxel = voxel;
-			//println!("\tafter put: {}", self);
 		}
 		else{
 			println!("Replacing {}", index);
 		}
 	}
-	
 	
 	//return the octree at this location
 	fn get(&self, location:u8)->&Octree{
@@ -119,6 +127,11 @@ impl Octree{
 	
 	fn is_empty(&self, location:u8)->bool{
 		!self.is_occupied(location)
+	}
+	
+	//determine whether this node is already a leaf
+	fn is_leaf(&self)->bool{
+		self.children.len() == 0
 	}
 	
 	//give the previous value, determine where in the children to insert
@@ -168,12 +181,6 @@ impl Octree{
 			}
 			panic!("Shouldn't reach here!");
 		}
-	}
-	
-	pub fn get_color(&self, lod:u8, x:i64, y:i64 ,z:i64)->Color{
-		let loc = location::from_xyz(lod, x as u64, y as u64, z as u64);
-		let voxel = self.get_voxel(loc);
-		voxel.color
 	}
 	
 }

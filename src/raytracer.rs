@@ -47,12 +47,15 @@ pub fn trace(lod:u8, view_lod:u8, ray:Ray, model:&Model, obj_scale:f64, max_dist
 	while length < max_distance {
 		let photon = ray.at_length(length);
 		let model_loc = Vector::new(model.location.x as f64, model.location.y as f64, model.location.z as f64);
-		let photon_rel = model_loc.subtract(photon);
+		let photon_rel = model_loc.subtract(&photon);
 		let photon_scale = photon_rel.scale(obj_scale/view_scale).round();
 		
 		let hit = model.octree.is_point_occupied(lod, photon_scale.x, photon_scale.y, photon_scale.z);
 		if hit {
-			return model.octree.get_color(lod, photon_scale.x, photon_scale.y, photon_scale.z);
+			return Color::new(
+				(255 - (255 * photon_scale.x/limit)) as u8, 
+				(255 - (255 * photon_scale.y/limit)) as u8, 
+				(255 - (255 * photon_scale.z/limit)) as u8);
 		}
 		length += 1;
 	}

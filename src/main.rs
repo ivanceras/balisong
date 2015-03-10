@@ -11,7 +11,6 @@ use std::num::Float;
 use scene::Scene;
 use screen::Screen;
 use camera::Camera;
-use std::old_io::File;
 use time::PreciseTime;
 
 mod octree;
@@ -32,8 +31,8 @@ mod model;
 
 
 fn main() {
-	let lod = 7;
-	let view_lod = 8;//11;
+	let lod = 11;
+	let view_lod = 11;
 
 	let limit = 1 << lod;
 	let r = limit as u64 / 4 as u64;//TODO: cube does not work with limit/2 don't know why
@@ -72,26 +71,13 @@ fn main() {
 	let duration = start.to(PreciseTime::now());
 	println!("Rendering took: {} seconds", duration.num_seconds());
 	
-	save_to_file(format!("./renders/{}lod{}view{}scale{}cam{}pitch{}yaw{}.ppm",shape_name, lod, view_lod, obj_scale, cam_loc, pitch.to_degrees().round(), yaw.to_degrees().round()), pixels, screen.width, screen.height);
+	let filename = format!("./renders/{}lod{}view{}scale{}cam{}pitch{}yaw{}.ppm",
+		shape_name, lod, view_lod, obj_scale, cam_loc, 
+		pitch.to_degrees().round(), yaw.to_degrees().round());
+	
+	scene.save_to_file(filename, pixels, screen.width, screen.height);
  }
 
 
-//save pixels to file
-pub fn save_to_file(filename:String, pixels:Vec<Color>, width:i64, height:i64){
-	let mut file = File::create(&Path::new(&filename));
-	let header = String::from_str("P6\n# CREATOR: lee\n");
-	let size = format!("{} {}\n255\n", width, height);
 
-	let mut buffer = Vec::new();
-    buffer.push_all(header.into_bytes().as_slice());
-    buffer.push_all(size.into_bytes().as_slice());
-    
-	for p in 0..pixels.len() {
-		buffer.push(pixels[p].r);
-		buffer.push(pixels[p].g);
-		buffer.push(pixels[p].b);
-	}
-	file.write_all(buffer.as_slice());
-	println!("Saved to {}",&filename);
-}
 

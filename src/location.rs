@@ -63,6 +63,39 @@ pub fn index_to_xyz(lod:u8, idx:u64)->(u64, u64, u64){
     (x, y, z)
 }
 
+pub fn index_to_zyx(lod:u8, idx:u64)->(u64, u64, u64){
+	let limit = 1 << lod;
+	let mut index = idx;
+    let x =  index % limit;
+    index /= limit;
+    let y = index % limit;
+    index /= limit;
+    let z = index;	
+    (x, y, z)
+}
+
+pub fn index_to_yzx(lod:u8, idx:u64)->(u64, u64, u64){
+	let limit = 1 << lod;
+	let mut index = idx;
+    let y =  index % limit;
+    index /= limit;
+    let z = index % limit;
+    index /= limit;
+    let x = index;	
+    (x, y, z)
+}
+
+pub fn index_to_xzy(lod:u8, idx:u64)->(u64, u64, u64){
+	let limit = 1 << lod;
+	let mut index = idx;
+    let x =  index % limit;
+    index /= limit;
+    let z = index % limit;
+    index /= limit;
+    let y = index;	
+    (x, y, z)
+}
+
 fn count_bits(arg:u8)->u8 {
     let mut count:u8 = 0;
     let mut x = arg;
