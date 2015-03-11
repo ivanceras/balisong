@@ -7,15 +7,16 @@ use color::Color;
 //by removing all children and store the information in the parent
 //
 pub struct Octree{
-	value:u8,
-	children:Vec<Octree>//leaf only when there is no children content, children.len() == 0,
+	pub value:u8,
+	pub solid:bool, //determines if the whole octree is solid or not
+	pub children:Vec<Octree>//leaf only when there is no children content, children.len() == 0,
 }
 
 
 impl Octree{
 	
 	pub fn new()->Octree{
-		Octree{value:0, children:Vec::new()}
+		Octree{value:0, children:Vec::new(), solid:false}
 	}
 	
 	pub fn set_tree(&mut self, location:Vec<u8>){
@@ -32,8 +33,11 @@ impl Octree{
 		let node = self.get_as_mut(root_loc);//here is the node
 		if location.len() == 1 {//this is the last
 			let last = location.len() - 1;
+			assert!(last == 0);
 			node.set(location[last]);
+			//println!("last is called: {:8b}, children: {}",node.value, node.children.len());
 		}
+		
 		location.remove(0);
 		if location.len() > 0 {
 			node.set_tree_internal(location);
@@ -129,6 +133,24 @@ impl Octree{
 		!self.is_occupied(location)
 	}
 	
+	pub fn is_all_children_solid(&self)->bool{
+		let mut cnt = 0;
+		for i in 0..self.children.len(){
+			if self.children[i].solid {
+				cnt += 1;
+			}else{
+				return false;
+			} 
+		}
+		if cnt == 8 {
+			return true;
+		}
+		false
+	}
+	pub fn is_solid(&self)->bool{
+		self.solid
+	}
+	
 	//determine whether this node is already a leaf
 	fn is_leaf(&self)->bool{
 		self.children.len() == 0
@@ -170,6 +192,9 @@ impl Octree{
 		}
 		else{
 			let node = self.get(root_loc);
+			if node.is_solid(){
+				return true;
+			}
 			if location.len() == 1 {
 				let last = location.len() - 1;//actually location[last] = location[0] = root_loc
 				return node.is_occupied(location[last]);
@@ -182,7 +207,7 @@ impl Octree{
 			panic!("Shouldn't reach here!");
 		}
 	}
-	
+
 }
 
 

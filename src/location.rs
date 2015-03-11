@@ -27,6 +27,8 @@ pub fn is_bounded(lod:u8, x:i64, y:i64, z:i64)->bool{
  		true
 }
 
+
+//from location notation convert to eulidean xyz coordinate
 pub fn to_xyz(location:&Vec<u8>)->(u64, u64, u64){
 	let mut index = 0u64;
 	let lod = location.len() as u8;

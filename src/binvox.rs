@@ -209,8 +209,8 @@ fn read_data(reader:&mut BufferedReader<File>, size:u64)->Octree{
 			//optimize, only when it changes from 0 to 1 or 1 to zero, store the tree
 			//if value > 0 && (is_next2_empty || is_next1_empty || is_last1_empty || is_last2_empty ){
 			//if value > 0 && (is_next2_empty || is_last2_empty ){
-			if value > 0 && (is_next1_empty || is_last1_empty ){
-			//if value > 0 {//no carving
+			//if value > 0 && (is_next1_empty || is_last1_empty ){
+			if value > 0 {//no carving
 				let (x,y,z) = location::index_to_xyz(lod, i as u64);
 				//let (x,y,z) = location::index_to_zyx(lod, i as u64);
 				//let (x,y,z) = location::index_to_yzx(lod, i as u64);

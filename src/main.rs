@@ -28,11 +28,12 @@ mod screen;
 mod ray;
 mod raytracer;
 mod model;
+mod optimizer;
 
 
 fn main() {
-	let lod = 11;
-	let view_lod = 11;
+	let lod = 10;
+	let view_lod = lod;
 
 	let limit = 1 << lod;
 	let r = limit as u64 / 4 as u64;//TODO: cube does not work with limit/2 don't know why
@@ -45,7 +46,10 @@ fn main() {
 	let shape_name = shape.name();
 	println!("voxelizing...{}", shape_name);
 	let start = PreciseTime::now();
-	let root = voxelizer::voxelize(lod, shape);
+	let mut root = voxelizer::voxelize(lod, shape);
+	
+	optimizer::optimize(&mut root,lod);//save memory
+	
 	let duration = start.to(PreciseTime::now());
 	println!("Voxelizing took: {} seconds",duration.num_seconds());
 	

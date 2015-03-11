@@ -14,3 +14,4 @@ pub mod ray;
 pub mod raytracer;
 pub mod model;
 pub mod binvox;
+pub mod optimizer;

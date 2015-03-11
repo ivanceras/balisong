@@ -7,7 +7,7 @@ use std::num::Float;
 pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->Octree{
 	let limit = 1 << required_lod;
 	let mut root = Octree::new();
-	let mut percentage = 0;
+
 	
 	/*
 	let origin =  location::from_xyz(required_lod, 0, 0, 1);
@@ -25,7 +25,7 @@ pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->Octree{
 	let vox = Voxel::new(Color::blue(), normal, 0, 0);
 	root.put_tree(origin, vox);
 	*/
-	
+	let mut percentage = 0;
 	for x in 0..limit{
 		let new_percentage = (x as f64 * 100.0 / limit as f64).round() as u64;
 		if new_percentage > percentage{

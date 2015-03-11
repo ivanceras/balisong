@@ -20,10 +20,11 @@ use balisong::shape::Shape;
 use balisong::binvox::Binvox;
 use balisong::scene::Scene;
 use balisong::camera::Camera;
-
+use balisong::optimizer;
 
 fn main() {
-	let (lod, root) = Binvox::read_file("data/bunny7.binvox");
+	let (lod, mut root) = Binvox::read_file("data/bunny7.binvox");
+	optimizer::optimize(&mut root, lod);
 	let view_lod = lod;//10;--better render with same LOD
 	let limit = 1 << lod;
 	let r = limit as u64 / 4 as u64;//TODO: cube does not work with limit/2 don't know why
