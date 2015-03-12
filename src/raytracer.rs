@@ -12,7 +12,8 @@ use vector::Vector;
 use screen::Screen;
 use camera::Camera;
 
-
+//TODO: use adaptive view_lod 
+//that is: when the ray is getting longer, the view_lod will be lesser
 pub fn trace_ray(lod:u8, view_lod:u8, ray:Ray, model:&Model, obj_scale:f64, max_distance:u64 )->Color{
 	//let view_scale = (1 << (view_lod - lod)) as f64;//only applicable when view_lod > lod
 	let limit = 1 << lod;

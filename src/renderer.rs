@@ -32,62 +32,11 @@ pub fn render(lod:u8, view_lod:u8, model:Model, screen:&Screen, camera:&Camera)-
 	}
 	pixels
 }
-	
-/*
+
+//divide to the number of CPU
 pub fn render_threaded(lod:u8, view_lod:u8, model:Model, screen:&Screen, camera:&Camera)->Vec<Color>{
     println!("With threads...");
-    let mut pixels:Vec<Color> = Vec::new();
-    let total = screen.width * screen.height;
-	for t in range(0, total){
-	    pixels.push(Color::black());
-	}
-	
-	let (tx, rx) = mpsc::channel();
-	
-	let view_limit = 1 << view_lod;
-	let max_distance = 2 * (view_limit as f64 * view_limit as f64).sqrt().round() as u64;
-	let mut percentage = 0;
-	
-
-	let arc_model = Arc::new(model);
-	let camera_clone = camera.clone();
-	let arc_camera = Arc::new(camera_clone);
-	let screen_clone = screen.clone();
-	let arc_screen = Arc::new(screen_clone);
-	
-	for y in 0..screen.height{
-		let new_percentage = (y as f64 * 100.0 / screen.height as f64).round() as u64;
-		if new_percentage > percentage{
-			println!("{}%",new_percentage);
-		}
-		percentage = new_percentage;
-		for x in 0..screen.width{
-			let tx = tx.clone();
-			let arc_model_clone = arc_model.clone();
-			let arc_camera_clone = arc_camera.clone();
-			let arc_screen_clone = arc_screen.clone();
-			Thread::spawn(move || {
-				let color = trace_pixel(lod, view_lod, &arc_model_clone, &arc_screen_clone, &arc_camera_clone, x, y, max_distance);
-				tx.send((x, y, color));
-			});
-		}	
-	}
-	
-	for j in 0..screen.height{
-	    for i in range(0, screen.width){
-	    	let (x ,y ,color) = rx.recv().ok().expect("Could not recieve answer");
-	   		let index = y * screen.width + x;
-	   		pixels[index as usize] = color;
-	    }
-	}
-	
-	pixels
-}
-*/
-
-pub fn render_threaded(lod:u8, view_lod:u8, model:Model, screen:&Screen, camera:&Camera)->Vec<Color>{
-    println!("With threads...");
-    println!("std::os::num_cpu {}",os::num_cpus());
+    println!("number of CPU {}",os::num_cpus());
     let mut pixels:Vec<Color> = Vec::new();
     let total = screen.width * screen.height;
 	for t in 0..total{
@@ -134,6 +83,71 @@ pub fn render_threaded(lod:u8, view_lod:u8, model:Model, screen:&Screen, camera:
    		for i in 0..screen.width{
    			let index = y * screen.width + i;
 			pixels[index as usize] = line[i as usize].clone();
+		}
+	}
+	
+	pixels
+}
+pub fn render_threaded_cores(lod:u8, view_lod:u8, model:Model, screen:&Screen, camera:&Camera)->Vec<Color>{
+    println!("With threads...");
+    println!("number of CPU {}",os::num_cpus());
+    let cores = os::num_cpus();
+    let mut pixels:Vec<Color> = Vec::new();
+    let total = (screen.width * screen.height) as usize;
+	for t in 0..total{
+	    pixels.push(Color::black());
+	}
+	
+	let (tx, rx) = mpsc::channel();
+	
+	let view_limit = 1 << view_lod;
+	let max_distance = 2 * (view_limit as f64 * view_limit as f64).sqrt().round() as u64;
+	
+
+	let arc_model = Arc::new(model);
+	let camera_clone = camera.clone();
+	let arc_camera = Arc::new(camera_clone);
+	let screen_clone = screen.clone();
+	let arc_screen = Arc::new(screen_clone);
+	
+	let width = screen.width;
+	let parts = (total as f64 / cores as f64).ceil() as usize;
+	for i in 0..cores{
+		let tx = tx.clone();
+		let arc_model_clone = arc_model.clone();
+		let arc_camera_clone = arc_camera.clone();
+		let arc_screen_clone = arc_screen.clone();
+		let start = i * parts;
+		let end = (i+1) * parts;
+		println!("Spawning {} to {}", start, end);
+		Thread::spawn(move || {
+			let mut line = Vec::new();
+			for index in start..end{
+				if index > total{
+					break;
+				}
+				let y = index as i64 / width;
+				let x = index as i64 - (y * width);
+				let color = trace_pixel(lod, view_lod, &arc_model_clone, &arc_screen_clone, &arc_camera_clone, x, y, max_distance);
+				line.push(color);
+			}	
+			tx.send((start, end, line));
+		});
+	}
+
+	let mut percentage = 0;
+	for j in 0..cores{
+		let new_percentage = (j as f64 * 100.0 / cores as f64).round() as u64;
+		if new_percentage > percentage{
+			println!("{}%",new_percentage);
+		}
+		percentage = new_percentage;
+		
+    	let (start, end, line) = rx.recv().ok().expect("Could not recieve answer");
+   		let mut cnt = 0;
+   		for i in start..end{
+			pixels[i] = line[cnt].clone();
+			cnt += 1;
 		}
 	}
 	

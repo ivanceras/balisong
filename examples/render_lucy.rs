@@ -54,7 +54,8 @@ fn main() {
 	let model = Model::new(Point::new(view_limit/2, view_limit/2, view_limit/2), root, obj_scale);
 	let start = PreciseTime::now();
 	println!("Rendering...");
-	let pixels = renderer::render(lod, view_lod, model, &screen, &camera);
+	//45 s to 9s
+	let pixels = renderer::render_threaded(lod, view_lod, model, &screen, &camera);
 	let duration = start.to(PreciseTime::now());
 	println!("Rendering took: {} seconds", duration.num_seconds());
 	

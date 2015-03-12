@@ -32,8 +32,8 @@ mod renderer;
 
 
 fn main() {
-	let lod = 6;
-	let view_lod = lod;
+	let lod = 11;
+	let view_lod = 11;
 
 	let limit = 1 << lod;
 	let r = limit as u64 / 4 as u64;//TODO: cube does not work with limit/2 don't know why
@@ -71,11 +71,14 @@ fn main() {
 	
 	let model = Model::new(Point::new(view_limit/2, view_limit/2, view_limit/2), root, obj_scale);
 	
+	//let pixels = renderer::render(lod, view_lod, model, &screen, &camera);
+	//9.077 - LOD11 = 37
 	//let pixels = renderer::render_threaded(lod, view_lod, model, &screen, &camera);
-	let pixels = renderer::render(lod, view_lod, model, &screen, &camera);
+	//9.463s - LOD11 = 39.626s
+	let pixels = renderer::render_threaded_cores(lod, view_lod, model, &screen, &camera);
 	
 	let duration = start.to(PreciseTime::now());
-	println!("Rendering took: {} seconds", duration.num_seconds());
+	println!("Rendering took: {} ms", duration.num_milliseconds());
 	
 	let filename = format!("./renders/{}lod{}view{}scale{}cam{}pitch{}yaw{}.ppm",
 		shape_name, lod, view_lod, obj_scale, cam_loc, 

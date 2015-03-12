@@ -132,7 +132,9 @@ impl Octree{
 	fn is_empty(&self, location:u8)->bool{
 		!self.is_occupied(location)
 	}
-	
+	//TODO:: create a version of this method which determines if the voxel is solid
+	//voxel is solid when the value is 255 and there are no children
+	//traversing the tree to clear children when value is 255 will prune the octree from redundant data
 	pub fn is_all_children_solid(&self)->bool{
 		let mut cnt = 0;
 		for i in 0..self.children.len(){
