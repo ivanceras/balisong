@@ -27,3 +27,15 @@ impl Camera{
 			}
 	}
 }
+
+
+impl Clone for Camera {
+    fn clone(&self) -> Camera {
+    	Camera{
+			location:self.location.clone(),
+			pitch:self.pitch,
+			yaw:self.yaw,
+			roll:self.roll
+			}	
+	}
+}

@@ -1,14 +1,18 @@
 //describe the scene of
+use std::old_io::File;
+use std::sync::mpsc;
+use std::num::Float;
+use std::thread::Thread;
+
 use point::Point;
 use camera::Camera;
 use octree::Octree;
 use screen::Screen;
 use ray::Ray;
-use std::num::Float;
 use raytracer;
 use model::Model;
 use color::Color;
-use std::old_io::File;
+
 
 pub struct Scene{
 	objects:Vec<Model>,
@@ -30,10 +34,15 @@ impl Scene{
 		self.camera = cam;
 	}
 	
-	//add an octree to the scene
+		//add an octree to the scene
 	pub fn add(&mut self, x:i64, y:i64 ,z:i64, octree:Octree, scale:f64){
 		let model = Model::new(Point::new(x,y,z), octree, scale);
 		self.objects.push(model);
+	}
+	
+	//takes a long time to render when in threading
+	pub fn render_threaded(&self, lod:u8, screen:&Screen, model:Model, camera:&Camera)->Vec<Color>{
+		raytracer::render_threaded(lod, self.view_lod, model, screen, camera)
 	}
 	
 	//trace the ray from the camera then get the pixels
@@ -63,7 +72,7 @@ impl Scene{
 		let pixelv_roll_rotated = pixelv_pitch_rotated.rotate_at_z(self.camera.roll);
 		let pixel_ray = Ray::new(&self.camera.location, pixelv_roll_rotated);
 		let model = &self.objects[0];
-		let color = raytracer::trace(lod, self.view_lod, pixel_ray, model, model.scale, max_distance);
+		let color = raytracer::trace_ray(lod, self.view_lod, pixel_ray, model, model.scale, max_distance);
 		color
 	}
 	

@@ -1,38 +1,32 @@
+extern crate balisong;
 extern crate time;
 
-use octree::Octree;
-use point::Point;
-use shape::{Shape, Sphere, Cube};
-use normal::Normal;
-use std::option::Option;
-use voxel::Voxel;
-use color::Color;
 use std::num::Float;
-use screen::Screen;
-use camera::Camera;
+use std::num::SignedInt;
+use std::sync::Arc;
+use std::thread::Thread;
+use std::old_io::File;
 use time::PreciseTime;
-use model::Model;
 
-mod octree;
-mod point;
-mod shape;
-mod normal;
-mod vector;
-mod voxel;
-mod color;
-mod location;
-mod voxelizer;
-mod camera;
-mod screen;
-mod ray;
-mod raytracer;
-mod model;
-mod optimizer;
-mod renderer;
+
+use balisong::ray::Ray;
+use balisong::vector::Vector;
+use balisong::point::Point;
+use balisong::screen::Screen;
+use balisong::color::Color;
+use balisong::shape::Sphere;
+use balisong::shape::Cube;
+use balisong::shape::Shape;
+use balisong::binvox::Binvox;
+use balisong::camera::Camera;
+use balisong::optimizer;
+use balisong::voxelizer;
+use balisong::model::Model;
+use balisong::renderer;
 
 
 fn main() {
-	let lod = 6;
+	let lod = 13;
 	let view_lod = lod;
 
 	let limit = 1 << lod;
@@ -41,8 +35,8 @@ fn main() {
 	let cy = limit/2;
 	let cz = limit/2;
 	let center = Point::new(cx, cy, cz);
-	let shape = Sphere::new(r, &center);
-	//let shape = Cube::new(r, &center);
+	//let shape = Sphere::new(r, &center);
+	let shape = Cube::new(r, &center);
 	let shape_name = shape.name();
 	println!("voxelizing...{}", shape_name);
 	let start = PreciseTime::now();
@@ -66,11 +60,9 @@ fn main() {
 	//let screen = Screen::new(1920, 1080, 1920/2);
 	let screen = Screen::new(800, 600, 800/2);
 	
+	let model = Model::new(Point::new(view_limit/2, view_limit/2, view_limit/2), root, obj_scale);
 	let start = PreciseTime::now();
 	println!("Rendering...");
-	
-	let model = Model::new(Point::new(view_limit/2, view_limit/2, view_limit/2), root, obj_scale);
-	
 	//let pixels = renderer::render_threaded(lod, view_lod, model, &screen, &camera);
 	let pixels = renderer::render(lod, view_lod, model, &screen, &camera);
 	

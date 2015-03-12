@@ -51,9 +51,9 @@ impl Shape for Sphere{
 		let zf = (z - self.center.z) as f64;
 		let rad = (xf*xf + yf*yf + zf*zf).sqrt().round() as u64;
 		
-		if rad <= self.radius {//solid
+		//if rad <= self.radius {//solid
 		//if rad == self.radius {//thin carved
-		//if rad <= self.radius && rad >= (self.radius - 1)  {//carved out, 2 inner walls down
+		if rad <= self.radius && rad >= (self.radius - 1)  {//carved out, 2 inner walls down
 			return true;
 		}
 		false
@@ -112,7 +112,8 @@ impl Cube{
 impl Shape for Cube{
 
     fn is_inside(&self, x:i64, y:i64, z:i64)->bool{
-		self.is_inside_priv(x,y,z) && self.is_outside_priv(x,y,z,1)
+		self.is_inside_priv(x,y,z) && self.is_outside_priv(x,y,z,1)//carved
+		//self.is_inside_priv(x,y,z)//solid
     }
     
     

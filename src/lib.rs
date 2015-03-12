@@ -7,7 +7,7 @@ pub mod voxel;
 pub mod color;
 pub mod location;
 pub mod voxelizer;
-pub mod scene;
+pub mod renderer;
 pub mod camera;
 pub mod screen;
 pub mod ray;

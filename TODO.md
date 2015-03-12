@@ -17,4 +17,7 @@
 	* For each LOD, make a grid, which stores the material indexes, arranged in morton encode and compressed using RLE (run-length-encoding).
 	* Normals are stored in this arrangement as well
 	
-		
+
+## March 12, 2015
+
+	* Try to trace each pixel using threads		
