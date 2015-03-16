@@ -1,9 +1,10 @@
+extern crate time;
+
 pub mod octree;
 pub mod point;
 pub mod shape;
 pub mod normal;
 pub mod vector;
-pub mod voxel;
 pub mod color;
 pub mod location;
 pub mod voxelizer;
@@ -14,4 +15,3 @@ pub mod ray;
 pub mod raytracer;
 pub mod model;
 pub mod binvox;
-pub mod optimizer;

@@ -19,14 +19,12 @@ use balisong::shape::Cube;
 use balisong::shape::Shape;
 use balisong::binvox::Binvox;
 use balisong::camera::Camera;
-use balisong::optimizer;
 use balisong::renderer;
 use balisong::model::Model;
 
 
 fn main() {
-	let (lod, mut root) = Binvox::read_file("data/dragon10.binvox");
-	optimizer::optimize(&mut root, lod);
+	let (lod, mut root) = Binvox::read_file(format!("data/dragon10.binvox"));
 	let view_lod = lod;//10;--better render with same LOD
 	let limit = 1 << lod;
 	let r = limit as u64 / 4 as u64;//TODO: cube does not work with limit/2 don't know why
@@ -54,7 +52,7 @@ fn main() {
 	let model = Model::new(Point::new(view_limit/2, view_limit/2, view_limit/2), root, obj_scale);
 	let start = PreciseTime::now();
 	println!("Rendering...");
-	let pixels = renderer::render(lod, view_lod, model, &screen, &camera);
+	let pixels = renderer::render_threaded(lod, view_lod, model, &screen, &camera);
 	let duration = start.to(PreciseTime::now());
 	println!("Rendering took: {} seconds", duration.num_seconds());
 	

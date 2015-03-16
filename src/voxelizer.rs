@@ -4,9 +4,10 @@ use location;
 use std::num::Float;
 
 //voxelize a shape into a required lod
-pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->Octree{
+pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->Octree<bool>{
 	let limit = 1 << required_lod;
 	let mut root = Octree::new();
+	let mut normals = Octree::new();
 
 	
 	/*
@@ -36,7 +37,9 @@ pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->Octree{
 			for z in 0..limit{
 				if shape.is_inside(x as i64, y as i64, z as i64){
 					let loc =  location::from_xyz(required_lod, x, y, z);
-					root.set_tree(loc);//move voxel and location to the octree
+					let normal_loc = loc.clone();
+					root.set_tree(loc, Some(true));//move voxel and location to the octree
+					normals.set_tree(normal_loc, Some(shape.normal(x as i64, y as i64, z as i64)));
 				}
 			}
 		}

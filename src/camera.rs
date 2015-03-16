@@ -1,5 +1,9 @@
 use point::Point;
 
+///
+/// This is a representation of Camera relative to the virtual world.
+///
+///
 pub struct Camera{
 	pub location:Point,
 	pub pitch:f64,

@@ -98,7 +98,7 @@ pub fn index_to_xzy(lod:u8, idx:u64)->(u64, u64, u64){
     (x, y, z)
 }
 
-fn count_bits(arg:u8)->u8 {
+pub fn count_bits(arg:u8)->u8 {
     let mut count:u8 = 0;
     let mut x = arg;
     while x > 0 {
@@ -113,3 +113,4 @@ pub fn display(location:&Vec<u8>){
 		println!("location[{}]: {:8b}",i,location[i]);
 	}
 }
+

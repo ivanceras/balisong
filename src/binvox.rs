@@ -7,7 +7,6 @@ use std::old_io::BufferedReader;
 use std::str::FromStr;
 use std::num::Float;
 use color::Color;
-use voxel::Voxel;
 use location;
 use octree::Octree;
 use normal::Normal;
@@ -21,7 +20,7 @@ pub struct Binvox{
 
 impl Binvox{
 	
-	pub fn read_file(filename:&'static str)->(u8, Octree){
+	pub fn read_file(filename:String)->(u8, Octree<bool>){
 		let path = Path::new(filename);
     	let display = path.display();	
 	    let mut file = match File::open(&path) {
@@ -155,7 +154,7 @@ fn read_scaling(reader:&mut BufferedReader<File>)->f64{
 	}
 }
 
-fn read_data(reader:&mut BufferedReader<File>, size:u64)->Octree{
+fn read_data(reader:&mut BufferedReader<File>, size:u64)->Octree<bool>{
 	
 	let lod = lod_from_size(size);
 	println!("lod: {}",lod);
@@ -174,7 +173,7 @@ fn read_data(reader:&mut BufferedReader<File>, size:u64)->Octree{
 		println!("data: {}",data);
 		
 		let mut end_index = 0u64;
-		let mut nr_voxels = 0;
+		let mut nr_voxels = 0u64;
 		let mut index = 0u64;
 		let mut linear_voxels = Vec::new();
 		while end_index < size {
@@ -185,7 +184,7 @@ fn read_data(reader:&mut BufferedReader<File>, size:u64)->Octree{
 				for i in index..end_index {
 					linear_voxels.push(value);
 				}
-				if value > 0 {nr_voxels += count;}	
+				if value > 0 {nr_voxels += count as u64;}	
 				index = end_index;
 		}
 		
@@ -216,7 +215,7 @@ fn read_data(reader:&mut BufferedReader<File>, size:u64)->Octree{
 				//let (x,y,z) = location::index_to_yzx(lod, i as u64);
 				//let (x,y,z) = location::index_to_xzy(lod, i as u64);
 				let loc =  location::from_xyz(lod, x, y, z);
-				root.set_tree(loc);
+				root.set_tree(loc, Some(true));
 			}
 		}
 		return root;

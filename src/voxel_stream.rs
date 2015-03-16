@@ -1,9 +1,12 @@
+///
+/// a streaming interface to stream in voxel structure and materials
+///
+
 pub VoxelStream{
 	svo_stream:Vec<u8>,
 	material_lut:Vec<Material>,
 }
 
-//a streaming interface to stream in voxel structure and materials
 impl VoxelStream{
 	
 	//load svo, normals, materials

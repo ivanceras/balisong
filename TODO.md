@@ -21,3 +21,11 @@
 ## March 12, 2015
 
 	* Try to trace each pixel using threads		
+	
+## March 16, 2015
+	 
+	 * Add normals, injecting luminance from light source
+	 * Make an efficient conversion algorithmn for determining the next voxel to evaluate rather than relying on location::from_xyz(lod, x,y,z) which performs a lot of calculations
+	 * Implement a one world octree, which all object that are to be viewed will be on the octree. The world octree contains the camera location. Based on the camera location objects at minimum required LOD, will be loaded to this octree. The closer it is to the camera, the more details will be fetched. The loaded octree will be merged to the one world octree. There will be merging implementation of the octree.
+
+	 * Merge point, Scale, rotation, translation, transformation lattice

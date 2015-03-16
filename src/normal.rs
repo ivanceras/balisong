@@ -28,13 +28,6 @@ impl Normal{
         Normal{x:i8x, y:i8y, z:i8z}
     }
     
-    pub fn from_unit_vector(v:&Vector)->Normal{
-        let i8x = (v.x * 127.0).round() as i8;
-        let i8y = (v.y * 127.0).round() as i8;
-        let i8z = (v.z * 127.0).round() as i8;
-        Normal{x:i8x, y:i8y, z:i8z}
-    }
-    
     pub fn unit_vector(&self)->Vector{
         let x = self.x as f64;
         let y = self.y as f64;

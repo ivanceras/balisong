@@ -40,7 +40,6 @@ impl Screen{
 	pub fn get_required_lod(&self, view_lod:u8, distance:f64)->i8{
 	    let view_limit = 1 << view_lod;
 	    let factor = distance / view_limit as f64 * (self.fov/2.0).tan();//factor will be used to subtract the lod 
-	    println!("exp: {}",factor.log2());
 	    let exp = factor.log2().round();
 	    let required_lod = (view_lod as i16 - exp as i16) as i8;
 	    required_lod

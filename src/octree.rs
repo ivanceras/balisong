@@ -1,81 +1,76 @@
 use std::fmt;
 use location;
-use color::Color;
 
 //TODO: 
 //memory optimization: check to see if all 8 children in a voxel has same materials, then simplify 
 //by removing all children and store the information in the parent
 //
-pub struct Octree{
-	pub value:u8,
-	pub solid:bool, //determines if the whole octree is solid or not
-	pub children:Vec<Octree>//leaf only when there is no children content, children.len() == 0,
+pub struct Octree<T>{
+	pub bitset:u8,//contains the information of which of octants belongs to 
+	pub content:Option<T>,
+	pub children:Vec<Octree<T>>//leaf only when there is no children content, children.len() == 0,
 }
 
 
-impl Octree{
+impl <T> Octree<T>{
 	
-	pub fn new()->Octree{
-		Octree{value:0, children:Vec::new(), solid:false}
+	pub fn new()->Octree<T>{
+		Octree{bitset:0, content: None, children:Vec::new()}
 	}
-	
-	pub fn set_tree(&mut self, location:Vec<u8>){
+
+	/// 
+	/// Sets the content of the octree at this location
+	/// 
+	pub fn set_tree(&mut self, location:Vec<u8>, content:Option<T>){
 		let mut m_location = location.clone();
-		self.set_tree_internal(&mut m_location)
+		self.set_tree_internal(&mut m_location, content)
 	}
 	
-	//recursive call without recursive cloning the location
-	fn set_tree_internal(&mut self, location:&mut Vec<u8>){
-		let root_loc = location[0];
-		if self.is_empty(root_loc){
-			self.set(root_loc);
+	
+	///
+	/// Internal implementation for setting the octree
+	///
+	
+	fn set_tree_internal(&mut self, location:&mut Vec<u8>, content:Option<T>){
+		if self.is_empty(location[0]){//if empty, create a node with None content
+			self.set(location[0], None);
 		}
-		let node = self.get_as_mut(root_loc);//here is the node
-		if location.len() == 1 {//this is the last
-			let last = location.len() - 1;
-			assert!(last == 0);
-			node.set(location[last]);
-			//println!("last is called: {:8b}, children: {}",node.value, node.children.len());
+		let node = self.get_as_mut(location[0]);//here is the node
+		if location.len() > 1 {//this is the last
+			location.remove(0);
+			if location.len() > 0 {
+				node.set_tree_internal(location, content);
+			}
 		}
-		
-		location.remove(0);
-		if location.len() > 0 {
-			node.set_tree_internal(location);
+		else{//location.len() == 1
+			assert!(location.len() == 1, "This should be the last location");
+			node.set(location[0], content);
 		}
 	}
+
 	
-	/* TODO: this must be implemented somewhere
-	pub fn get_voxel(&self, location:Vec<u8>)->Voxel{
-		let octree = self.get_tree(location);
-		if octree.voxel.is_some(){
-			return octree.voxel.clone().unwrap();
-		}
-		else{
-			println!("octree.voxel is None");
-		}
-		panic!("No voxel content!");
-	}
-	*/
-	
-	fn get_tree(&self, location:Vec<u8>)->&Octree{
+	///
+	///Traverse the tree and get the node at this location
+	///
+	///
+	pub fn get_tree(&self, location:Vec<u8>)->&Octree<T>{
 		let mut m_location = location.clone();
 		self.get_tree_internal(&mut m_location)
 	}
 	
-	//recursive call without recursive cloning the location
-	fn get_tree_internal(&self, location:&mut Vec<u8>)->&Octree{
-		let root_loc = location[0];
-		let node = self.get(root_loc);
-		if location.len() == 1 {
+	///
+	///internal implementation of getting the octree
+	///
+	fn get_tree_internal(&self, location:&mut Vec<u8>)->&Octree<T>{
+		let node = self.get_node(location[0]);
+		if location.len() > 1 {
+			location.remove(0);
+			return node.get_tree_internal(location);
+		}
+		else{
+			assert!(location.len() == 1, "This should be the last location");
 			return node;
 		}
-		location.remove(0);
-		let child_node = node;
-		if location.len() > 0 {
-			let child_node = child_node.get_tree_internal(location);
-			return child_node;
-		}
-		panic!("Shouldn't reach here!");
 	}
 	
 	
@@ -92,20 +87,20 @@ impl Octree{
 	//titanium + aluminum = alloy, hardness of material is recalculated
 	//iron + oxygen = rust
 	
-	pub fn set(&mut self, location:u8){
-		let index = self.index_of(location);
-		if self.is_empty(location){
-			self.value = self.value | location;
-			self.children.push(Octree::new());
-		}
-		else{
-			println!("Replacing {}", index);
-		}
+	///
+	/// Set the content of this node at bit location
+	/// TODO; if there is already a content, overwrite it
+	///
+	pub fn set(&mut self, location:u8, content:Option<T>){
+		self.children.push(Octree::new());
+		self.bitset = self.bitset | location;
+		self.content = content;
 	}
-	
-	//return the octree at this location
-	fn get(&self, location:u8)->&Octree{
-		//println!("LEAF: {}",self);
+
+	///
+	/// get the child node located  
+	///
+	fn get_node(&self, location:u8)->&Octree<T>{
 		if self.is_occupied(location){
 			let index = self.index_of(location);
 			return &self.children[index];
@@ -114,8 +109,13 @@ impl Octree{
 			panic!("No octree at location: {:8b}",location);
 		}
 	}
-	//get the octree as mutable
-	fn get_as_mut(&mut self, location:u8)->&mut Octree{
+	
+	///
+	/// Get the node as mutable at this location
+	///
+	///
+	
+	fn get_as_mut(&mut self, location:u8)->&mut Octree<T>{
 		if self.is_occupied(location){
 			let index = self.index_of(location);
 			return &mut self.children[index];
@@ -125,40 +125,33 @@ impl Octree{
 		}
 	}
 	
+	///
+	/// checks whether this node is set or not
+	///
 	fn is_occupied(&self, location:u8)->bool{
-		self.value & location == location
+		self.bitset & location == location
 	}
 	
+	///
+	/// checks whether the node has value or not
+	///
 	fn is_empty(&self, location:u8)->bool{
-		!self.is_occupied(location)
-	}
-	//TODO:: create a version of this method which determines if the voxel is solid
-	//voxel is solid when the value is 255 and there are no children
-	//traversing the tree to clear children when value is 255 will prune the octree from redundant data
-	pub fn is_all_children_solid(&self)->bool{
-		let mut cnt = 0;
-		for i in 0..self.children.len(){
-			if self.children[i].solid {
-				cnt += 1;
-			}else{
-				return false;
-			} 
-		}
-		if cnt == 8 {
-			return true;
-		}
-		false
-	}
-	pub fn is_solid(&self)->bool{
-		self.solid
+		!self.is_occupied(location)// or self.bitset == 0
 	}
 	
-	//determine whether this node is already a leaf
+	///
+	///it is a leaf when there is no children
+	///
+	///
+	
 	fn is_leaf(&self)->bool{
 		self.children.len() == 0
 	}
 	
-	//give the previous value, determine where in the children to insert
+	///
+	/// get the actual index of the child from the vector base on bitset value, 
+	/// by which the actual vector array is sparsed
+	///
 	fn index_of(&self, location:u8)->usize{
 		let mut index = 0;
 		for i in 0..8{
@@ -166,55 +159,173 @@ impl Octree{
 			if byte == location {
 				return index;
 			}
-			if self.value & byte == byte{
+			if self.bitset & byte == byte{
 				index += 1;
 			}
 		}
 		return index;
 	}
-	//checks if path of the octree exist or not
+
+	///
+	/// check whether the certain point in 3D space is occupied or not
+	/// This uses the conversion of the implementation of location::from_xyz
+	/// to do the calculation
+	/// TODO: create a more simple/optimum algorithm for this
+	///
 	pub fn is_point_occupied(&self, lod:u8, x:i64, y:i64 ,z:i64)->bool{
-		if location::is_bounded(lod, x, y, z){
+		if location::is_bounded(lod, x, y, z){ //no more bounds check if the camera is located inside the one-world octree
 			let loc = location::from_xyz(lod, x as u64, y as u64, z as u64);
 			return self.is_location_occupied(&loc);
 		}
 		false
 	}		
 
-	//checks if path of the octree exist or not
+	///
+	/// check whether the a certain location is occupied or not, expressed in 
+	/// location notation which is just an arrray of 8bit values which describes the location of the 
+	/// voxel at each LOD (level of detail )
+	///
 	pub fn is_location_occupied(&self, location:&Vec<u8>)->bool{
 		let mut m_location = location.clone();
 		self.is_location_occupied_internal(&mut m_location)
 	}
 	
+	///
+	/// private implementation, since location is mutated at each recursive pass, check whether the a certain location is occupied or not, expressed in 
+	/// location notation which is just an arrray of 8bit values which describes the location of the 
+	/// voxel at each LOD (level of detail )
+	///
 	fn is_location_occupied_internal(&self, location:&mut Vec<u8>)->bool{
-		let root_loc = location[0];
-		if self.is_empty(root_loc){
+		if self.is_empty(location[0]){
 			return false;
 		}
 		else{
-			let node = self.get(root_loc);
-			if node.is_solid(){
-				return true;
+			let node = self.get_node(location[0]);
+			if location.len() > 1 {
+				location.remove(0);
+				return node.is_location_occupied_internal(location);
 			}
-			if location.len() == 1 {
-				let last = location.len() - 1;//actually location[last] = location[0] = root_loc
-				return node.is_occupied(location[last]);
-			}
-			location.remove(0);
-			let child_node = node;
-			if location.len() > 0 {
-				return child_node.is_location_occupied_internal(location);
+			else{// location.len() == 1
+				assert!(location.len() == 1, "This should be the last location array");
+				return node.is_occupied(location[0]);
 			}
 			panic!("Shouldn't reach here!");
 		}
+	}
+	
+	///
+	/// return the total number of leaf nodes in the octree
+	//
+	pub fn count_leaf(&self)->u64{
+		self.count_leaf_internal(self)
+	}
+	
+	/// 
+	/// internal implementation of counting the leaf nodes in the octree
+	/// 
+	fn count_leaf_internal(&self, node:&Octree<T>)->u64{
+		let mut count = 0;
+		if node.is_leaf(){
+			count += 1;
+		}
+		for i in 0..node.children.len(){
+			count += self.count_leaf_internal(&node.children[i]);
+		}
+		count
+	}
+	
+	///
+	/// Count the total number of nodes
+	///
+	///
+	pub fn count_nodes(&self)->u64{
+		self.count_nodes_internal(self)
+	}
+	
+	///
+	/// internal implementation for counting the total number of nodes
+	///
+	fn count_nodes_internal(&self, node:&Octree<T>)->u64{
+		//let mut count = location::count_bits(node.bitset) as u64;
+		let mut count = node.children.len() as u64;
+		for i in 0..node.children.len(){
+			count += self.count_nodes_internal(&node.children[i]);
+		}
+		count
+	}
+	
+	///
+	/// checks if all children of this node are all leaf nodes
+	///
+	pub fn is_all_children_leaf(&self)->bool{
+		let mut count = 0;
+		for i in 0..self.children.len(){
+			if self.children[i].is_leaf(){
+				count += 1;
+			}
+			else{
+				return false;
+			}
+		}
+		count == 8
+	}
+	
+	///
+	/// checks if all children of this octree is fully occupied
+	///
+	pub fn is_solid(&self)->bool{
+		self.is_solid_internal(self)
+	}
+	
+	/// traverse to the children then check until it hit the leaf
+	/// if this fully filed and all the chilren are fully filed until it hits the leaf, then it is sold
+	fn is_solid_internal(&self, node:&Octree<T>)->bool{
+		let partially_solid = node.is_partial_solid();
+		println!("\t partially_solid: {}",partially_solid);
+		let mut count = 0;
+		if node.is_all_children_leaf(){
+			println!("\t leaf!");
+			return partially_solid;
+		}
+		for i in 0..node.children.len(){
+			if self.is_solid_internal(&node.children[i]){
+				count += 1;
+			}
+			else{
+				println!("\t not solid!");
+				return false;
+			}
+		}
+		println!("\t count : {}",count);
+		partially_solid && count == 8
+	}
+	
+	pub fn is_partial_solid(&self)->bool{
+		self.bitset == 255
+	}
+	
+	pub fn count_solids(&self)->u64{
+		self.count_solids_internal(self)
+	}
+	
+	fn count_solids_internal(&self, node:&Octree<T>)->u64{
+		let mut count = 0;
+		if node.is_solid(){
+			count += 1;
+		}
+		for i in 0..node.children.len(){
+			if node.children[i].is_solid(){
+				count += 1;
+			}
+		}
+		count
 	}
 
 }
 
 
-impl fmt::Display for Octree {
+impl <T: fmt::Display> fmt::Display for Octree<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "(value: {:8b}), children: {}",self.value, self.children.len())
+        write!(f, "(bitset: {:8b}), children: {}",self.bitset, self.children.len())
     }
 }

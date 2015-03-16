@@ -2,7 +2,7 @@
 
 name = "balisong"
 version = "0.0.1"
-authors = [ "Your name <you@example.com>" ]
+authors = [ "ivanceras@gmail.com" ]
 
 [lib]
 name = "balisong"

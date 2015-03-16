@@ -19,14 +19,13 @@ use balisong::shape::Cube;
 use balisong::shape::Shape;
 use balisong::binvox::Binvox;
 use balisong::camera::Camera;
-use balisong::optimizer;
 use balisong::voxelizer;
 use balisong::model::Model;
 use balisong::renderer;
 
 
 fn main() {
-	let lod = 13;
+	let lod = 8;
 	let view_lod = lod;
 
 	let limit = 1 << lod;
@@ -41,8 +40,6 @@ fn main() {
 	println!("voxelizing...{}", shape_name);
 	let start = PreciseTime::now();
 	let mut root = voxelizer::voxelize(lod, shape);
-	
-	optimizer::optimize(&mut root,lod);//save memory
 	
 	let duration = start.to(PreciseTime::now());
 	println!("Voxelizing took: {} seconds",duration.num_seconds());
@@ -63,11 +60,12 @@ fn main() {
 	let model = Model::new(Point::new(view_limit/2, view_limit/2, view_limit/2), root, obj_scale);
 	let start = PreciseTime::now();
 	println!("Rendering...");
-	//let pixels = renderer::render_threaded(lod, view_lod, model, &screen, &camera);
-	let pixels = renderer::render(lod, view_lod, model, &screen, &camera);
+
+	//let pixels = renderer::render(lod, view_lod, model, &screen, &camera);
+	let pixels = renderer::render_threaded(lod, view_lod, model, &screen, &camera);
 	
 	let duration = start.to(PreciseTime::now());
-	println!("Rendering took: {} seconds", duration.num_seconds());
+	println!("Rendering took: {} seconds", duration.num_milliseconds());
 	
 	let filename = format!("./renders/{}lod{}view{}scale{}cam{}pitch{}yaw{}.ppm",
 		shape_name, lod, view_lod, obj_scale, cam_loc, 

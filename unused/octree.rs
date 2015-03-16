@@ -8,7 +8,6 @@ use color::Color;
 //
 pub struct Octree{
 	pub value:u8,
-	pub solid:bool, //determines if the whole octree is solid or not
 	pub children:Vec<Octree>//leaf only when there is no children content, children.len() == 0,
 }
 
@@ -16,7 +15,7 @@ pub struct Octree{
 impl Octree{
 	
 	pub fn new()->Octree{
-		Octree{value:0, children:Vec::new(), solid:false}
+		Octree{value:0, children:Vec::new()}
 	}
 	
 	pub fn set_tree(&mut self, location:Vec<u8>){
@@ -43,19 +42,6 @@ impl Octree{
 			node.set_tree_internal(location);
 		}
 	}
-	
-	/* TODO: this must be implemented somewhere
-	pub fn get_voxel(&self, location:Vec<u8>)->Voxel{
-		let octree = self.get_tree(location);
-		if octree.voxel.is_some(){
-			return octree.voxel.clone().unwrap();
-		}
-		else{
-			println!("octree.voxel is None");
-		}
-		panic!("No voxel content!");
-	}
-	*/
 	
 	fn get_tree(&self, location:Vec<u8>)->&Octree{
 		let mut m_location = location.clone();
@@ -92,6 +78,7 @@ impl Octree{
 	//titanium + aluminum = alloy, hardness of material is recalculated
 	//iron + oxygen = rust
 	
+	/*
 	pub fn set(&mut self, location:u8){
 		let index = self.index_of(location);
 		if self.is_empty(location){
@@ -102,7 +89,13 @@ impl Octree{
 			println!("Replacing {}", index);
 		}
 	}
+	*/
 	
+	pub fn set(&mut self, location:u8){
+		self.children.push(Octree::new());
+		self.value = self.value | location;
+	}
+
 	//return the octree at this location
 	fn get(&self, location:u8)->&Octree{
 		//println!("LEAF: {}",self);
@@ -131,24 +124,6 @@ impl Octree{
 	
 	fn is_empty(&self, location:u8)->bool{
 		!self.is_occupied(location)
-	}
-	
-	pub fn is_all_children_solid(&self)->bool{
-		let mut cnt = 0;
-		for i in 0..self.children.len(){
-			if self.children[i].solid {
-				cnt += 1;
-			}else{
-				return false;
-			} 
-		}
-		if cnt == 8 {
-			return true;
-		}
-		false
-	}
-	pub fn is_solid(&self)->bool{
-		self.solid
 	}
 	
 	//determine whether this node is already a leaf
@@ -192,9 +167,6 @@ impl Octree{
 		}
 		else{
 			let node = self.get(root_loc);
-			if node.is_solid(){
-				return true;
-			}
 			if location.len() == 1 {
 				let last = location.len() - 1;//actually location[last] = location[0] = root_loc
 				return node.is_occupied(location[last]);
@@ -206,6 +178,96 @@ impl Octree{
 			}
 			panic!("Shouldn't reach here!");
 		}
+	}
+	
+	pub fn count_leaf(&self)->u64{
+		self.count_leaf_internal(self)
+	}
+	
+	fn count_leaf_internal(&self, node:&Octree)->u64{
+		let mut count = 0;
+		if node.is_leaf(){
+			count += 1;
+		}
+		for i in 0..node.children.len(){
+			count += self.count_leaf_internal(&node.children[i]);
+		}
+		count
+	}
+	
+	pub fn count_nodes(&self)->u64{
+		self.count_nodes_internal(self)
+	}
+	
+	fn count_nodes_internal(&self, node:&Octree)->u64{
+		//let mut count = location::count_bits(node.value) as u64;
+		let mut count = node.children.len() as u64;
+		for i in 0..node.children.len(){
+			count += self.count_nodes_internal(&node.children[i]);
+		}
+		count
+	}
+	
+	pub fn is_all_children_leaf(&self)->bool{
+		let mut count = 0;
+		for i in 0..self.children.len(){
+			if self.children[i].is_leaf(){
+				count += 1;
+			}
+			else{
+				return false;
+			}
+		}
+		count == 8
+	}
+	
+	
+	pub fn is_solid(&self)->bool{
+		self.is_solid_internal(self)
+	}
+	
+	//traverse to the children then check until it hit the leaf
+	//if this fully filed and all the chilren are fully filed until it hits the leaf, then it is sold
+	fn is_solid_internal(&self, node:&Octree)->bool{
+		let partially_solid = node.is_partial_solid();
+		println!("\t partially_solid: {}",partially_solid);
+		let mut count = 0;
+		if node.is_all_children_leaf(){
+			println!("\t leaf!");
+			return partially_solid;
+		}
+		for i in 0..node.children.len(){
+			if self.is_solid_internal(&node.children[i]){
+				count += 1;
+			}
+			else{
+				println!("\t not solid!");
+				return false;
+			}
+		}
+		println!("\t count : {}",count);
+		partially_solid && count == 8
+	}
+	
+	pub fn is_partial_solid(&self)->bool{
+		self.value == 255
+	}
+	
+	pub fn count_solids(&self)->u64{
+		self.count_solids_internal(self)
+	}
+	
+	fn count_solids_internal(&self, node:&Octree)->u64{
+		let mut count = 0;
+		if node.is_solid(){
+			count += 1;
+		}
+		for i in 0..node.children.len(){
+			if node.children[i].is_solid(){
+				count += 1;
+			}
+		}
+		count
 	}
 
 }

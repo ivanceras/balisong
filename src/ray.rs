@@ -17,10 +17,10 @@ impl Ray{
 		
 	}
 	
-	pub fn at_length(&self, length:u64)->Vector{
-		let xlen = self.origin.x as f64 + self.unit_dir.x * length as f64; 
-		let ylen = self.origin.y as f64 + self.unit_dir.y * length as f64;
-		let zlen = self.origin.z as f64 + self.unit_dir.z * length as f64;
+	pub fn at_length(&self, length:f64)->Vector{
+		let xlen = self.origin.x as f64 + self.unit_dir.x * length; 
+		let ylen = self.origin.y as f64 + self.unit_dir.y * length;
+		let zlen = self.origin.z as f64 + self.unit_dir.z * length;
 		Vector::new(xlen, ylen, zlen)
 
 	}

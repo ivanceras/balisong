@@ -51,9 +51,9 @@ impl Shape for Sphere{
 		let zf = (z - self.center.z) as f64;
 		let rad = (xf*xf + yf*yf + zf*zf).sqrt().round() as u64;
 		
-		//if rad <= self.radius {//solid
+		if rad <= self.radius {//solid
 		//if rad == self.radius {//thin carved
-		if rad <= self.radius && rad >= (self.radius - 1)  {//carved out, 2 inner walls down
+		//if rad <= self.radius && rad >= (self.radius - 1)  {//carved out, 2 inner walls down
 			return true;
 		}
 		false
@@ -88,7 +88,7 @@ impl Cube{
         Cube{lower:lower, upper:upper}
     }
     
-    fn is_inside_priv(&self, x:i64, y:i64, z:i64)->bool{
+    fn is_inside_private(&self, x:i64, y:i64, z:i64)->bool{
 		if x >= self.lower.x && x <= self.upper.x &&
            y >= self.lower.y && y <= self.upper.y &&
 		   z >= self.lower.z && z <= self.upper.z {//solid
@@ -97,7 +97,7 @@ impl Cube{
 	   false
 	}
     
-    fn is_outside_priv(&self, x:i64, y:i64, z:i64, inset:i64)->bool{
+    fn is_outside_private(&self, x:i64, y:i64, z:i64, inset:i64)->bool{
 		if x < (self.lower.x + inset) || x > (self.upper.x - inset) ||
            y < (self.lower.y + inset) || y > (self.upper.y - inset) ||
 		   z < (self.lower.z + inset) || z > (self.upper.z - inset) {//solid
@@ -112,8 +112,8 @@ impl Cube{
 impl Shape for Cube{
 
     fn is_inside(&self, x:i64, y:i64, z:i64)->bool{
-		self.is_inside_priv(x,y,z) && self.is_outside_priv(x,y,z,1)//carved
-		//self.is_inside_priv(x,y,z)//solid
+		//self.is_inside_private(x,y,z) && self.is_outside_private(x,y,z,1)//carved
+		self.is_inside_private(x,y,z)//solid
     }
     
     
