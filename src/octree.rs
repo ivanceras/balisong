@@ -53,11 +53,18 @@ impl <T> Octree<T>{
 	///Traverse the tree and get the node at this location
 	///
 	///
-	pub fn get_tree(&self, location:Vec<u8>)->&Octree<T>{
+	/*
+	fn get_tree(&self, location:&Vec<u8>)->&Octree<T>{
 		let mut m_location = location.clone();
 		self.get_tree_internal(&mut m_location)
 	}
+	*/
 	
+	pub fn get(&self, location:&Vec<u8>)->&Option<T>{
+		let mut m_location = location.clone();
+		let octree = self.get_tree_internal(&mut m_location);
+		&octree.content
+	}
 	///
 	///internal implementation of getting the octree
 	///

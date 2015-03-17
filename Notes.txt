@@ -1,3 +1,6 @@
 lod 9, view_lod 9 comsumes 12.6 GB of RAM 
 
 unboxed uses 13.0 GB, slow freeing of memory
+
+Books of shaders
+http://patriciogonzalezvivo.com/2015/thebookofshaders/

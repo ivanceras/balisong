@@ -7,3 +7,6 @@
 	
 	* Tracing is now done in threads, 1 thread per core delivers the maximum performance
 	
+##March 17,2015
+	* Light calculation with normals now work
+	

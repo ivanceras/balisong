@@ -1,3 +1,4 @@
 /target/
 /renders/*.ppm
 /.project
+/.DS_Store

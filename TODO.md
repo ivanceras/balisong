@@ -29,3 +29,11 @@
 	 * Implement a one world octree, which all object that are to be viewed will be on the octree. The world octree contains the camera location. Based on the camera location objects at minimum required LOD, will be loaded to this octree. The closer it is to the camera, the more details will be fetched. The loaded octree will be merged to the one world octree. There will be merging implementation of the octree.
 
 	 * Merge point, Scale, rotation, translation, transformation lattice
+	 
+## March 17, 2015
+	
+	* Implement a non-recursive function for get_tree in octree module, this will be translated to opencl version to allow real time rendering
+	* Implement an own ply to voxel + normal + color converter
+	* Implement a function to generate a normal of a voxel based on the neighbors
+		* Get all the neighbors for this voxel, then take 3 at a time, generate normals then get the average of the normals
+	

@@ -8,9 +8,9 @@ use std::num::Float;
 /// This is a vector expressed in 3 i8's instead of 3 f64's
 ///
 pub struct Normal{
-	x:i8,
-	y:i8,
-	z:i8
+	pub x:i8,
+	pub y:i8,
+	pub z:i8
 }
 
 impl Normal{

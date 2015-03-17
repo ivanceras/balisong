@@ -1,10 +1,12 @@
+use std::num::Float;
+
 use shape::Shape;
 use octree::Octree;
 use location;
-use std::num::Float;
+use normal::Normal;
 
 //voxelize a shape into a required lod
-pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->Octree<bool>{
+pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->(Octree<bool>, Octree<Normal>){
 	let limit = 1 << required_lod;
 	let mut root = Octree::new();
 	let mut normals = Octree::new();
@@ -44,5 +46,5 @@ pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->Octree<bool>{
 			}
 		}
 	}
-	root
+	(root, normals)
 }

@@ -46,7 +46,7 @@ fn main() {
 	let shape_name = shape.name();
 	println!("voxelizing...{}", shape_name);
 	let start = PreciseTime::now();
-	let mut root = voxelizer::voxelize(lod, shape);
+	let (mut root, normals) = voxelizer::voxelize(lod, shape);
 	
 	let duration = start.to(PreciseTime::now());
 	println!("Voxelizing took: {} seconds",duration.num_seconds());
@@ -72,7 +72,7 @@ fn main() {
 	let start = PreciseTime::now();
 	println!("Rendering...");
 	
-	let model = Model::new(Point::new(view_limit/2, view_limit/2, view_limit/2), root, obj_scale);
+	let model = Model::new(Point::new(view_limit/2, view_limit/2, view_limit/2), root, normals, obj_scale);
 	
 	let pixels = renderer::render_threaded(lod, view_lod, model, &screen, &camera);
 	

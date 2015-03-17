@@ -3,6 +3,12 @@ use std::num::Float;
 use std::fmt;
 use point::Point;
 
+
+///
+/// There are a multitude of vector algebra implementations out there
+/// but it is a good thing to learn in action
+///
+///
 pub struct Vector{
 	pub x:f64,
 	pub y:f64,
@@ -62,8 +68,26 @@ impl Vector{
 		Vector::new(x,y,z)
 	}
 	
+	// http://freespace.virgin.net/hugo.elias/routines/r_dot.htm
+	//  DotProduct = (x1*x2 + y1*y2 + z1*z2)
+	pub fn dot(&self, vec:&Vector)->f64{
+		self.x * vec.x + self.y * vec.y + self.z * vec.z
+	}
+	
+	//http://freespace.virgin.net/hugo.elias/routines/r_cross.htm
+	//ox = (y1 * z2) - (y2 * z1)
+	//oy = (z1 * x2) - (z2 * x1)
+	//oz = (x1 * y2) - (x2 * y1)
+	pub fn cross(&self, vec:&Vector)->Vector{
+		let x = self.y * vec.z - vec.y * self.z;
+		let y = self.z * vec.x - vec.z * self.x;
+		let z = self.x * vec.y - vec.x * self.y;
+		Vector{x:x, y:y, z:z}
+	}
+	
     //http://stackoverflow.com/questions/13275719/rotate-a-3d-point-around-another-one
     //http://stackoverflow.com/questions/16380147/how-to-rotate-an-object-defined-by-x-y-z-points-around-the-x-y-or-z-axis
+    //http://stackoverflow.com/questions/14607640/rotating-a-vector-in-3d-space
     pub fn rotate_at_z(&self, a:f64)->Vector{
     	let x = self.x * a.cos() - self.y * a.sin();
 		let y = self.x * a.sin() + self.y * a.cos();
@@ -71,15 +95,15 @@ impl Vector{
 		Vector::new(x,y,z)
     }
      pub fn rotate_at_y(&self, b:f64)->Vector{
-		let z = self.z * b.cos() - self.x * b.sin();  
 		let x = self.z * b.sin() + self.x * b.cos();
 		let y = self.y;
+		let z = self.z * b.cos() - self.x * b.sin();  
 		Vector::new(x,y,z)
     }
     pub fn rotate_at_x(&self, c:f64)->Vector{
+		let x = self.x;
     	let y = self.y * c.cos() - self.z * c.sin();
 		let z = self.y * c.sin() + self.z * c.cos();
-		let x = self.x;
 		Vector::new(x,y,z)
     }
     
