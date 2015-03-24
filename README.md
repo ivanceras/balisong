@@ -43,7 +43,7 @@ then look at `./renders` directory. File output is in .ppm format which should b
 
 
 #Progress made since ivancerust
-* This project is a progression of [![ivancerust] (https://github.com/ivanceras/ivancerust)]
+* This project is a progression of ivancerust https://github.com/ivanceras/ivancerust
  (which i didn't remove, coz I want to create progress documents, which can be useful for those who want to learn on how things are derived)
 * This now uses sparse octree which speed up the searching of points to and average of 3 microsecond per pixel.
 	* Rendering process still takes ~30 seconds, since there are only 8 CPU to parallelize the load of 2 million pixels (1920x1080)
@@ -62,7 +62,7 @@ then look at `./renders` directory. File output is in .ppm format which should b
 
 
 ##Previous discussion on reddit
-	http://www.reddit.com/r/programming/comments/2xnlv7/3d_voxel_renderer_using_raytracing_written_in_rust/
+http://www.reddit.com/r/programming/comments/2xnlv7/3d_voxel_renderer_using_raytracing_written_in_rust/
 
 
 
@@ -71,5 +71,5 @@ then look at `./renders` directory. File output is in .ppm format which should b
 * If you are interested in making this a full blown renderer + physics engine, fork this project.
 
 	
-# Updates
-	Follow me on twitter: @ivanceras
+# For Updates
+Follow me on twitter: @ivanceras
