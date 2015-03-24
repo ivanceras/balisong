@@ -5,26 +5,22 @@ A voxel based renderer written in rust.
 
 ##Screenshots
 
-	
-######Final result (dual smoothing)
+######No Smoothing (Below)
+![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/no_smoothing.png)
 
-![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/dual_smooth.png)
 
+
+######Single Smoothing (Below)
+![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/single_smooth.png)
 
 Note: The purple dots indicated erroneous calculation upon averaging which have resulted to Normal(0, 0, 0)
 
 
 
-######Single Smoothing
 
-![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/single_smooth.png)
+######Dual smoothing / Final result
+![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/dual_smooth.png)
 
-
-
-
-######No Smoothing
-
-![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/no_smoothing.png)
 
 ##How to generate the image above
 	
