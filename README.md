@@ -25,8 +25,9 @@ Note: The purple dots indicated erroneous calculation upon averaging which have 
 ##How to generate the image above
 	
 ```
+git clone https://github.com/ivanceras/balisong
+cd balisong
 cargo run --release --example render_solid_lucy
-
 ```
 
 then look at `./renders` directory. File output is in .ppm format which should be viewable in linux
