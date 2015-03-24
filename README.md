@@ -5,7 +5,16 @@ A voxel based renderer written in rust.
 
 ##Screenshots
 	
+Final result (dual smoothing)
+![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/dual_smooth.png)
 
+Single Smoothing
+
+![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/single_smooth.png)
+
+No Smoothing
+
+![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/no_smoothing.png)
 
 ##How to generate the image above
 	
