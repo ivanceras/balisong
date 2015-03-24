@@ -41,6 +41,7 @@ then look at `./renders` directory. File output is in .ppm format which should b
 
 #Progress made since ivancerust
 * This project is a progression of [ivancerust](https://github.com/ivanceras/ivancerust)
+* Calculation of normals take a few minutes, and a few minutes more for smoothing the normals. This is however not yet optimized, and may improved in future iteration of this project
 * This now uses sparse octree which speed up the searching of points to an average of 3 microsecond per pixel.
 	* Rendering process still takes ~30 seconds, since there are only 8 CPU to parallelize the load of 2 million pixels (1920x1080)
 
