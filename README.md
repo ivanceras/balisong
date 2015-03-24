@@ -6,23 +6,23 @@ A voxel based renderer written in rust.
 ##Screenshots
 
 	
-Final result (dual smoothing)
+###Final result (dual smoothing)
 
 ![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/dual_smooth.png)
 
 
-*Note: The purple dots indicated erroneous calculation upon averaging which have resulted to Normal(0, 0, 0)
+####*Note: The purple dots indicated erroneous calculation upon averaging which have resulted to Normal(0, 0, 0)
 
 
 
-Single Smoothing
+###Single Smoothing
 
 ![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/single_smooth.png)
 
 
 
 
-No Smoothing
+###No Smoothing
 
 ![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/no_smoothing.png)
 
@@ -43,8 +43,7 @@ then look at `./renders` directory. File output is in .ppm format which should b
 
 
 #Progress made since ivancerust
-* This project is a progression of ivancerust https://github.com/ivanceras/ivancerust
- (which i didn't remove, coz I want to create progress documents, which can be useful for those who want to learn on how things are derived)
+* This project is a progression of [ivancerust](https://github.com/ivanceras/ivancerust)
 * This now uses sparse octree which speed up the searching of points to an average of 3 microsecond per pixel.
 	* Rendering process still takes ~30 seconds, since there are only 8 CPU to parallelize the load of 2 million pixels (1920x1080)
 
