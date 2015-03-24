@@ -4,13 +4,23 @@ A voxel based renderer written in rust.
 
 
 ##Screenshots
+
 	
 Final result (dual smoothing)
+
 ![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/dual_smooth.png)
+
+
+*Note: The purple dots are erroneous normal calculation upon smoothing which have resulted to (0, 0, 0) no distance
+
+
 
 Single Smoothing
 
 ![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/single_smooth.png)
+
+
+
 
 No Smoothing
 
@@ -18,11 +28,12 @@ No Smoothing
 
 ##How to generate the image above
 	
-	```
-	cargo run --release --example render_solid_lucy
-	
-	```
+```
+cargo run --release --example render_solid_lucy
 
+```
+
+then look at ./renders directory
 
 
 #Features
