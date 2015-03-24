@@ -10,9 +10,15 @@ use vector::Vector;
 
 //voxelize a shape into a required lod
 pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->(Octree<bool>, Octree<Normal>){
+	// calculate the normals using the voxel structure
+	let recalculate_normals = true;
+	
+	// get averages on neighboring normals
+	let use_smooth_normals = true;
+
+
 	let limit = 1 << required_lod;
 	let mut root = Octree::new();
-	let recalculate_normals = true;
 	let mut normals = Octree::new();
 
 	
@@ -53,6 +59,9 @@ pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->(Octree<bool>, Octree<Norma
 	}
 	if recalculate_normals{
 		normals = calculate_normals(&root, required_lod);
+		if use_smooth_normals{
+			normals = smoothen_normals(&root, &normals, required_lod);
+		}
 	}
 	(root, normals)
 }
@@ -96,35 +105,17 @@ fn calculate_point_normal(node:&Octree<bool>, lod:u8, point:&Point)->Normal{
 		return Normal::from_vector(&Vector::new(0.0, 0.0, 0.0));
 	}
 	let occluded = neighbors::get_closest_occluded_neighbor(node, lod, point);
-	let closest_empty = neighbors::get_closest_empty_neighbor(node, lod, point);
 	
-	
-	let occlusion_normal = if occluded.is_some(){
+	if occluded.is_some(){
 		let normal = calculate_normal_based_occluded_point(node, lod, point, &(occluded.unwrap()));
-		Some(normal)
-	}else{
-		None
-	};
+		return Normal::from_vector(&normal)
+	}
 	
-	let empty_neighbor_normal = if closest_empty.is_some(){
+	let closest_empty = neighbors::get_closest_empty_neighbor(node, lod, point);
+	if closest_empty.is_some(){
 		let normal = calculate_normal_based_empty_neighbor(node, lod, point, &(closest_empty.unwrap()));
-		Some(normal)
-	}else{
- 		None
- 	};
-
-	//if occlusion_normal.is_some() &&  empty_neighbor_normal.is_some(){
-	//	let average_normal = get_average(&vec![occlusion_normal.unwrap(), empty_neighbor_normal.unwrap()]);
-	//	return Normal::from_vector(&average_normal);
-	//}
-	//else{
-		if occlusion_normal.is_some(){
-			return Normal::from_vector(&occlusion_normal.unwrap());
-		}
-		if empty_neighbor_normal.is_some(){
-			return Normal::from_vector(&empty_neighbor_normal.unwrap());
-		}
-	//}
+		return Normal::from_vector(&normal)
+	}
 	return Normal::from_vector(&Vector::new(0.0, 0.0, 0.0));
 }
 
@@ -224,11 +215,11 @@ fn get_average(vectors:&Vec<Vector>)->Vector{
 }
 
 ///recalculate the normals by averaging the normals at each neighbor
-fn smoothen_normals(node:&Octree<bool>, lod:u8)->Octree<Normal>{
+pub fn smoothen_normals(node:&Octree<bool>, initial_normals:&Octree<Normal>, lod:u8)->Octree<Normal>{
 	let limit = 1 << lod;
 	let mut normals = Octree::new();
 	let mut percentage = 0;
-	println!("Calculating normals...");
+	println!("Smoothing normals...");
 	for x in 0..limit{
 		let new_percentage = (x as f64 * 100.0 / limit as f64).round() as u64;
 		if new_percentage > percentage{
@@ -240,7 +231,7 @@ fn smoothen_normals(node:&Octree<bool>, lod:u8)->Octree<Normal>{
 				let point = Point::new(x as i64, y as i64, z as i64);
 				let loc =  location::from_xyz(lod, x, y, z);
 				if node.is_location_occupied(&loc){
-					let normal = get_average_normal(node, lod, &point);
+					let normal = get_average_normal(node, initial_normals, lod, &point);
 					normals.set_tree(&loc, Some(normal));
 				}
 			}
@@ -249,6 +240,17 @@ fn smoothen_normals(node:&Octree<bool>, lod:u8)->Octree<Normal>{
 	normals
 }
 
-fn get_average_normal(node:&Octree<bool>, lod:u8, point:&Point)->Normal{
-	Normal::from_vector(&Vector::new(1.0, 0.0, 0.0))
+fn get_average_normal(node:&Octree<bool>, normals:&Octree<Normal>, lod:u8, point:&Point)->Normal{
+	let neighbors  = neighbors::get_all_non_occluded_neighbors(node, lod, point);
+	let mut i_normals = Vec::new();
+	for i in 0..neighbors.len(){
+		let loc = location::from_xyz(lod, neighbors[i].x as u64, neighbors[i].y as u64, neighbors[i].z as u64);
+		let i_normal = normals.get(&loc);
+		if i_normal.is_some(){
+			let i_normal = i_normal.clone();
+			i_normals.push(i_normal.unwrap().unit_vector());
+		}
+	}
+	let ave_normal = get_average(&i_normals);
+	Normal::from_vector(&ave_normal)
 }

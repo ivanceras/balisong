@@ -47,8 +47,8 @@ fn main() {
 	let roll = (0.0).to_radians();
 	
 	let camera = Camera::new(cam_loc.clone(), pitch, yaw, roll);
-	//let screen = Screen::new(1920, 1080, 1920/2);
-	let screen = Screen::new(800, 600, 800/2);
+	let screen = Screen::new(1920, 1080, 1920/2);
+	//let screen = Screen::new(800, 600, 800/2);
 	
 	let model = Model::new(Point::new(view_limit/2, view_limit/2, view_limit/2), root, normals, obj_scale );
 	let start = PreciseTime::now();

@@ -10,6 +10,9 @@
 ##March 17,2015
 	* Light calculation with normals now work
 	
+##March 18, 2015
+	* Change the xyz orientation, pattern to unreal, blender, by using Z as up (previously Y as up)	
+	
 ##March 24, 2015
 	* Derivation of normals from voxel structure itself made progress, initial calculation. Looks ugly
 	

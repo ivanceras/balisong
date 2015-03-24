@@ -7,4 +7,6 @@ http://patriciogonzalezvivo.com/2015/thebookofshaders/
 
 
 Conversion from ply to binvox
-./binvox -cb -ri -aw -d 512 upright_lucy.ply 
+./binvox -cb -ri -aw -d 512 upright_lucy.ply
+
+./binvox -cb -d 512 dragon.ply  

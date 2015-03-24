@@ -78,8 +78,8 @@ pub fn trace_ray_normals(screen:&Screen, lod:u8, view_lod:u8, ray:Ray, model:&Mo
 					let normal = model.normal.get(&vec_location).clone().unwrap();
 					let normal_vec = normal.unit_vector();
 					if normal.x == 0 && normal.y == 0 && normal.z == 0{
-						//println!("This normal is error...");
-						return Color::blue();
+						//println!("This normal is erroneous...");
+						return Color::purple();
 					}
 					let light_vec = light.subtract(&photon).unit_vector();
 					let intensity = normal_vec.dot(&light_vec);

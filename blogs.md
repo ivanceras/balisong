@@ -20,4 +20,6 @@ Euclideon mentions that they are not doing multiplication, so probably they are 
 
 
 
-
+##Advantages of voxel raytracing
+	* No need to worry about clipping (objects that are halfway occluded in screen space), and objects that is partially occluded by other objects.
+	* A voxel is in the view or out of the view. There is no halfway
