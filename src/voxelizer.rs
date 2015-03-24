@@ -1,14 +1,18 @@
 use std::num::Float;
 
+use neighbors;
 use shape::Shape;
 use octree::Octree;
 use location;
 use normal::Normal;
+use point::Point;
+use vector::Vector;
 
 //voxelize a shape into a required lod
 pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->(Octree<bool>, Octree<Normal>){
 	let limit = 1 << required_lod;
 	let mut root = Octree::new();
+	let recalculate_normals = true;
 	let mut normals = Octree::new();
 
 	
@@ -39,12 +43,164 @@ pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->(Octree<bool>, Octree<Norma
 			for z in 0..limit{
 				if shape.is_inside(x as i64, y as i64, z as i64){
 					let loc =  location::from_xyz(required_lod, x, y, z);
-					let normal_loc = loc.clone();
-					root.set_tree(loc, Some(true));//move voxel and location to the octree
-					normals.set_tree(normal_loc, Some(shape.normal(x as i64, y as i64, z as i64)));
+					root.set_tree(&loc, Some(true));//move voxel and location to the octree
+						if !recalculate_normals{
+							normals.set_tree(&loc, Some(shape.normal(x as i64, y as i64, z as i64)));
+						}
 				}
 			}
 		}
 	}
+	if recalculate_normals{
+		normals = calculate_normals(&root, required_lod);
+	}
 	(root, normals)
+}
+
+/// for all the points that is not complete occluded
+/// calculate the normal
+
+pub fn calculate_normals(node:&Octree<bool>, lod:u8)->Octree<Normal>{
+	let limit = 1 << lod;
+	let mut normals = Octree::new();
+	let mut percentage = 0;
+	println!("Calculating normals...");
+	for x in 0..limit{
+		let new_percentage = (x as f64 * 100.0 / limit as f64).round() as u64;
+		if new_percentage > percentage{
+			println!("{}%",new_percentage);
+		}
+		percentage = new_percentage;
+		for y in 0..limit{
+			for z in 0..limit{
+				let point = Point::new(x as i64, y as i64, z as i64);
+				let loc =  location::from_xyz(lod, x, y, z);
+				//if node.is_location_occupied(&loc) && !neighbors::is_occluded(node, lod, &point){
+				if node.is_location_occupied(&loc){
+					let normal = calculate_point_normal(node, lod, &point);
+					let vec_normal = Vector::new(normal.x, normal.y, normal.z);
+					normals.set_tree(&loc, Some(Normal::from_vector(&vec_normal)));
+				}
+			}
+		}
+	}
+	normals
+}
+
+/// get the closest occluded point
+/// get all the neigbors,
+/// get the cross product of 2 vectors neighbors at a time
+
+fn calculate_point_normal(node:&Octree<bool>, lod:u8, point:&Point)->Vector{
+	if neighbors::is_occluded(node, lod, point){
+		return Vector::new(1.0, 0.0, 0.0);
+	}
+	let neighbors = neighbors::get_all_non_occluded_neighbors(node, lod, point);
+	let occluded = get_closest_occluded_neighbor(node, lod, point);
+	if occluded.is_some(){
+		let vec_occluded = Vector::from_point(point).subtract_point(&occluded.unwrap()).unit_vector();
+		//println!("point:{} occluded: {}, vector: {}, neighbors: {}",point, occluded, vec_occluded, neighbors.len());
+		
+		//pair 0 and last
+		let mut normals = Vec::new();
+		let mut skipped = 0;
+		for i in 0..neighbors.len(){
+			let pair0 = &neighbors[i];
+			for j in 0..neighbors.len(){
+				if i != j {
+					let pair1 = &neighbors[j];
+					let vec0 = Vector::from_point(&pair0).subtract_point(point).unit_vector();
+					let vec1 = Vector::from_point(&pair1).subtract_point(point).unit_vector();
+					//println!("pair: {} {} vector: {} {}", pair0, pair1, vec0, vec1);
+			
+					let normal = vec0.cross(&vec1).unit_vector();
+					let distance = normal.distance();
+					if distance > 0.0 {
+						//println!("distance: {}", distance);
+						let dot = vec_occluded.dot(&normal);
+						if dot > 0.0{
+							//println!("wrong direction, negate the normal");
+							normals.push(normal.negate().unit_vector());
+						}
+						else{
+							normals.push(normal.unit_vector());
+						}
+					}
+					else{
+						//println!("not enough distance for the cross product!.. skipping");
+						skipped += 1;
+					}
+				}
+			}
+		}
+		//println!("normals sample: {} skipped normals: {}",normals.len(), skipped);
+		return get_average(&normals).unit_vector()
+	}
+	else{
+		println!("point {} has no occluded neighbor..",point);
+		return Vector::new(1.0, 0.0, 0.0);//the point is alone, at the tip, with no occluded neighbor
+	}
+	
+}
+
+fn get_average(vectors:&Vec<Vector>)->Vector{
+	let len = vectors.len();
+	//assert!(len > 0, "vector length must be greater than 0");
+	let mut xt = 0.0f64;
+	let mut yt = 0.0f64;
+	let mut zt = 0.0f64;
+	for i in 0..len{
+		xt += vectors[i].x;
+		yt += vectors[i].y;
+		zt += vectors[i].z;
+	}
+	//println!("totals: {}, {}, {}", xt, yt, zt);
+	let ave = Vector::new(xt/len as f64, yt/len as f64, zt/len as f64);
+	//println!("average: {}",ave);
+	ave
+}
+
+fn get_closest_occluded_neighbor(node:&Octree<bool>, lod:u8, point:&Point)->Option<Point>{
+	let face_neighbors = neighbors::get_face_neighbors(node, lod, point);
+	let side_neighbors = neighbors::get_side_neighbors(node, lod, point);
+	let edge_neighbors = neighbors::get_edge_neighbors(node, lod, point);
+	
+	for i in 0..face_neighbors.len(){
+		if neighbors::is_occluded(node, lod, &face_neighbors[i]){
+			return Some((&face_neighbors[i]).clone());
+		}
+	}
+	
+	for j in 0..side_neighbors.len(){
+		if neighbors::is_occluded(node, lod, &side_neighbors[j]){
+			return Some((&side_neighbors[j]).clone());
+		}
+	}
+	
+	for k in 0..edge_neighbors.len(){
+		if neighbors::is_occluded(node, lod, &edge_neighbors[k]){
+			return Some((&edge_neighbors[k]).clone());
+		}
+	}
+	
+	for l in 0..face_neighbors.len(){
+		if neighbors::is_semi_occluded(node, lod, &face_neighbors[l]){
+			return Some((&face_neighbors[l]).clone());
+		}
+	}
+	
+	for m in 0..side_neighbors.len(){
+		if neighbors::is_semi_occluded(node, lod, &side_neighbors[m]){
+			return Some((&side_neighbors[m]).clone());
+		}
+	}
+	
+	for n in 0..edge_neighbors.len(){
+		if neighbors::is_semi_occluded(node, lod, &edge_neighbors[n]){
+			return Some((&edge_neighbors[n]).clone());
+		}
+	}
+	
+	//panic!("No closest occluded neighbor!");
+	None
 }

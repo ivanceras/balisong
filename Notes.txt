@@ -4,3 +4,7 @@ unboxed uses 13.0 GB, slow freeing of memory
 
 Books of shaders
 http://patriciogonzalezvivo.com/2015/thebookofshaders/
+
+
+Conversion from ply to binvox
+./binvox -cb -ri -aw -d 512 upright_lucy.ply 

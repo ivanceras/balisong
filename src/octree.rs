@@ -1,5 +1,9 @@
 use std::fmt;
+use std::num::Float;
+
 use location;
+use vector::Vector;
+
 
 //TODO: 
 //memory optimization: check to see if all 8 children in a voxel has same materials, then simplify 
@@ -8,7 +12,7 @@ use location;
 pub struct Octree<T>{
 	pub bitset:u8,//contains the information of which of octants belongs to 
 	pub content:Option<T>,
-	pub children:Vec<Octree<T>>//leaf only when there is no children content, children.len() == 0,
+	pub children:Vec<Octree<T>>,//leaf only when there is no children content, children.len() == 0,
 }
 
 
@@ -21,7 +25,7 @@ impl <T> Octree<T>{
 	/// 
 	/// Sets the content of the octree at this location
 	/// 
-	pub fn set_tree(&mut self, location:Vec<u8>, content:Option<T>){
+	pub fn set_tree(&mut self, location:&Vec<u8>, content:Option<T>){
 		let mut m_location = location.clone();
 		self.set_tree_internal(&mut m_location, content)
 	}
@@ -326,6 +330,15 @@ impl <T> Octree<T>{
 			}
 		}
 		count
+	}
+	
+	//at this location get the next voxel value
+	fn next(&self, direction:Vector, length:u64){
+		let dir = direction.scale(length as f64);
+		let x = dir.x.round();
+		let y = dir.y.round();
+		let z = dir.z.round();
+		//use this x,y,z as offset from the current location
 	}
 
 }

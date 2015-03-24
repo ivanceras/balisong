@@ -20,12 +20,16 @@ impl Normal{
         Normal{x:x, y:y, z:z}
     }
     
-     pub fn from_vector(v:&Vector)->Normal{
+    pub fn from_vector(v:&Vector)->Normal{
         let uv = v.unit_vector();
         let i8x = (uv.x * 127.0).round() as i8;
         let i8y = (uv.y * 127.0).round() as i8;
         let i8z = (uv.z * 127.0).round() as i8;
         Normal{x:i8x, y:i8y, z:i8z}
+    }
+    
+    pub fn from_f64(x:f64, y:f64, z:f64)->Normal{
+        Normal::from_vector(&Vector::new(x,y,z))
     }
     
     pub fn unit_vector(&self)->Vector{

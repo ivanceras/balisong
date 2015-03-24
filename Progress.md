@@ -10,3 +10,6 @@
 ##March 17,2015
 	* Light calculation with normals now work
 	
+##March 24, 2015
+	* Derivation of normals from voxel structure itself made progress, initial calculation. Looks ugly
+	

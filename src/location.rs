@@ -1,4 +1,3 @@
-
 //compute the location of x,y,z values based on the array of bytes, each byte describe the location of the bits
 //calculate the location using the lod x,y,z 
 pub fn from_xyz(lod:u8, x:u64, y:u64, z:u64)->Vec<u8>{

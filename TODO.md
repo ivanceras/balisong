@@ -16,6 +16,7 @@
 	* Create an array of lookup table, all the possible material used.
 	* For each LOD, make a grid, which stores the material indexes, arranged in morton encode and compressed using RLE (run-length-encoding).
 	* Normals are stored in this arrangement as well
+	* Objects can have same material but of different colors (i.e stained glass, erroded concrete, painted plates) or any discolored materials due to environmental factors. Technically, the discoloration are just different atoms attached to the bigger material, but are thier mass is negligible to be considered as another set of material
 	
 
 ## March 12, 2015
@@ -36,4 +37,64 @@
 	* Implement an own ply to voxel + normal + color converter
 	* Implement a function to generate a normal of a voxel based on the neighbors
 		* Get all the neighbors for this voxel, then take 3 at a time, generate normals then get the average of the normals
+		* Neighbors of 0 is 1,2,3,4,5,6,7 at the same parent.
+		* while the children (4,5,6,7) of the neighbor parent can also be a neighbor of this 0, but not (0,1,2,3) 
 	
+	
+## March 19, 2015
+	* location module needs to have "common_parent" function which tells what is the location of the common parent of two locations, This can be done by comparing at which part of the location array it starts to differ the values. Then we can then ignore the parent location path in the array, and do the calculations at the local level 
+	
+## March 23, 2015
+    * Create normals based on voxel formation
+        * Each voxel has 6 face neighbors, 12 side neighbors and 8 edge neighbors, at total of 26 neighbors. Calculated as (3^3-1)
+        * Getting the neighboring voxel at 0,0,0
+
+            ================
+             6 face neighbors          
+            ================
+             0  0  1
+             0  1  0
+             1  0  0
+             0  0 -1
+             0 -1  0
+            -1  0  0
+              
+             
+            ================
+             8 edges         
+            ================        	
+            -1 -1 -1 
+            -1 -1  1
+            -1  1 -1
+            -1  1  1
+             1 -1 -1
+             1 -1  1
+             1  1 -1	
+             1  1  1 
+             
+             ================
+             12 side neighbors       
+             ================   
+             
+             0  1  1
+             1  0  1
+             1  1  0
+             
+             0 -1 -1
+            -1  0 -1
+            -1 -1  0
+
+
+            -1  1  0
+             0 -1  1
+             0  1 -1
+
+             1  0  1
+             1 -1  0
+             1  0 -1
+         
+##March 24, 2015
+	* Calculation of normals on a different approach
+		* Calculate the normals based on empty sides of the voxel data
+		* If there is no occluded neighbor, we can use the empty voxel away from  the center as the point of reference
+		* For all empty voxels (may exclude those which are close to non-empty) get the vector to this empty voxels, then get the average. It will then be use to approximate the normal

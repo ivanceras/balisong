@@ -10,6 +10,7 @@ use color::Color;
 use location;
 use octree::Octree;
 use normal::Normal;
+use voxelizer;
 
 pub struct Binvox{
 	version:String,
@@ -20,7 +21,7 @@ pub struct Binvox{
 
 impl Binvox{
 	
-	pub fn read_file(filename:String)->(u8, Octree<bool>){
+	pub fn read_file(filename:String)->(u8, Octree<bool>, Octree<Normal>){
 		let path = Path::new(filename);
     	let display = path.display();	
 	    let mut file = match File::open(&path) {
@@ -37,7 +38,7 @@ impl Binvox{
 		let scale = read_scaling(&mut reader);	
 		let size = xlimit * ylimit * zlimit;
 		println!("size: {}", size);
-		let octree = read_data(&mut reader, size);
+		let (octree, normals) = read_data(&mut reader, size);
 		
 		let binvox = Binvox{
 					version: version, 
@@ -48,7 +49,7 @@ impl Binvox{
 		let size = xlimit * ylimit * zlimit;
 		let lod = lod_from_size(size);
 		
-		(lod, octree)
+		(lod, octree, normals)
 				
 	}
 
@@ -154,7 +155,7 @@ fn read_scaling(reader:&mut BufferedReader<File>)->f64{
 	}
 }
 
-fn read_data(reader:&mut BufferedReader<File>, size:u64)->Octree<bool>{
+fn read_data(reader:&mut BufferedReader<File>, size:u64)->(Octree<bool>, Octree<Normal>){
 	
 	let lod = lod_from_size(size);
 	println!("lod: {}",lod);
@@ -190,6 +191,7 @@ fn read_data(reader:&mut BufferedReader<File>, size:u64)->Octree<bool>{
 		
 		println!("There are {} voxels",linear_voxels.len());
 		let mut root = Octree::new();
+		//let mut normals = Octree::new();
 		println!("loading binvox....");
 		let mut percentage = 0;
 		for i in 0..linear_voxels.len(){
@@ -207,18 +209,18 @@ fn read_data(reader:&mut BufferedReader<File>, size:u64)->Octree<bool>{
 			//carving enabled to save a lot of memory
 			//optimize, only when it changes from 0 to 1 or 1 to zero, store the tree
 			//if value > 0 && (is_next2_empty || is_next1_empty || is_last1_empty || is_last2_empty ){
-			if value > 0 && (is_next2_empty || is_last2_empty ){
+			//if value > 0 && (is_next2_empty || is_last2_empty ){
 			//if value > 0 && (is_next1_empty || is_last1_empty ){
-			//if value > 0 {//no carving
+			if value > 0 {//no carving
 				let (x,y,z) = location::index_to_xyz(lod, i as u64);
-				//let (x,y,z) = location::index_to_zyx(lod, i as u64);
-				//let (x,y,z) = location::index_to_yzx(lod, i as u64);
-				//let (x,y,z) = location::index_to_xzy(lod, i as u64);
+				//let (x,z,y) = location::index_to_xzy(lod, i as u64);
 				let loc =  location::from_xyz(lod, x, y, z);
-				root.set_tree(loc, Some(true));
+				root.set_tree(&loc, Some(true));
+				//normals.set_tree(&loc, Some(Normal::from_f64(255.0-x as f64,255.0-y as f64,255.0-z as f64)));//fake normals point x
 			}
 		}
-		return root;
+		let normals = voxelizer::calculate_normals(&root, lod);
+		return (root, normals);
 		
 	}
 	else{

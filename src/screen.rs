@@ -16,7 +16,7 @@ impl Screen{
     	let fov = 2.0 * ( width as f64 / 2.0 / fd as f64).atan();
         Screen{width:width, height:height, fd:fd, fov:fov}
     }
-    pub fn at_pixel(&self, px:i64, py:i64)->Vector{
+    pub fn at_pixel_up_y(&self, px:i64, py:i64)->Vector{
      	let z = self.fd;
     	let x = px - self.width/2;
     	let y = self.height/2 - py;
@@ -28,6 +28,18 @@ impl Screen{
         v
     }
     
+    //using z as the up, y forward to screen, x to the right of the screen
+    pub fn at_pixel(&self, px:i64, py:i64)->Vector{
+     	let y = self.fd;
+    	let x = px - self.width/2;
+    	let z = self.height/2 - py;
+
+        let mx = x as f64;
+        let my = y as f64;
+        let mz = z as f64;
+        let v = Vector::new(mx, my, mz);
+        v
+    }
 
 	//calculate the view LOD resolution base on screen size
 	//find the LOD such that 1 << LOD > = screen.width

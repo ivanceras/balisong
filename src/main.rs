@@ -2,7 +2,7 @@ extern crate time;
 
 use octree::Octree;
 use point::Point;
-use shape::{Shape, Sphere, Cube};
+use shape::{Shape, Sphere};
 use normal::Normal;
 use std::option::Option;
 use color::Color;
@@ -19,6 +19,7 @@ mod normal;
 mod vector;
 mod color;
 mod location;
+mod neighbors;
 mod voxelizer;
 mod camera;
 mod screen;
@@ -28,8 +29,9 @@ mod model;
 mod renderer;
 
 
+
 fn main() {
-	let lod = 8;
+	let lod = 10;
 	
 	let screen = Screen::new(800, 600, 800/2);
 	//let view_lod = lod;
@@ -42,11 +44,11 @@ fn main() {
 	let cz = limit/2;
 	let center = Point::new(cx, cy, cz);
 	let shape = Sphere::new(r, &center);
-	//let shape = Cube::new(r, &center);
 	let shape_name = shape.name();
 	println!("voxelizing...{}", shape_name);
 	let start = PreciseTime::now();
 	let (mut root, normals) = voxelizer::voxelize(lod, shape);
+	//voxelizer::calculate_normals(&root, lod);
 	
 	let duration = start.to(PreciseTime::now());
 	println!("Voxelizing took: {} seconds",duration.num_seconds());
@@ -63,16 +65,18 @@ fn main() {
 	let view_limit = 1 << view_lod;
 	let obj_scale = 1.0;
 	
-	let cam_loc = Point::new(-view_limit/2, -view_limit/2, -view_limit/2);
-	let pitch = (-45.0).to_radians();
-	let yaw = (45.0).to_radians();
-	let roll = 0.0;
+	//let cam_loc = Point::new(view_limit/2, -view_limit/2, view_limit/2);
+	let cam_loc = Point::new(0, -view_limit/2, 0);
+	let pitch = (0.0).to_radians();
+	let yaw = (0.0).to_radians();
+	let roll = (0.0).to_radians();
 	let camera = Camera::new(cam_loc.clone(), pitch, yaw, roll);
 	
 	let start = PreciseTime::now();
 	println!("Rendering...");
 	
 	let model = Model::new(Point::new(view_limit/2, view_limit/2, view_limit/2), root, normals, obj_scale);
+	//let model = Model::new(Point::new(0, 0, 0), root, normals, obj_scale);
 	
 	let pixels = renderer::render_threaded(lod, view_lod, model, &screen, &camera);
 	

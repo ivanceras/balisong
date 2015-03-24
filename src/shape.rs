@@ -52,9 +52,10 @@ impl Shape for Sphere{
 		let zf = (z - self.center.z) as f64;
 		let rad = (xf*xf + yf*yf + zf*zf).sqrt().round() as u64;
 		
-		//if rad <= self.radius {//solid, caution: uses a lot of memory
+		if rad <= self.radius {//solid, caution: uses a lot of memory
 		//if rad == self.radius {//very thin carved
-		if rad <= self.radius && rad >= (self.radius - 1)  {//carved out, 2 inner walls down
+		//if rad <= self.radius && rad >= (self.radius - 1)  {//carved out, 2 inner walls down
+		//if rad <= self.radius && rad >= (self.radius - 2)  {//carved out, 2 inner walls down
 			return true;
 		}
 		false

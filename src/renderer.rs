@@ -115,13 +115,26 @@ fn get_average(durations:&Vec<f64>)->f64{
 	}
 	total_duration as f64 / durations.len() as f64
 }
-	
+
+/*	
 pub fn trace_pixel(lod:u8, view_lod:u8, model:&Model, screen:&Screen, camera:&Camera, x:i64, y:i64, max_distance:u64)->Color{
 	let pixel_vector = screen.at_pixel(x, y);
 	let pixel_vector = pixel_vector.rotate_at_y(camera.yaw);
 	let pixel_vector = pixel_vector.rotate_at_x(camera.pitch);
 	let pixel_vector = pixel_vector.rotate_at_z(camera.roll);
 	let pixel_ray = Ray::new(&camera.location, pixel_vector);
+	//let color = raytracer::trace_ray(screen, lod, view_lod, pixel_ray, model, model.scale, max_distance);
+	let color = raytracer::trace_ray_normals(screen, lod, view_lod, pixel_ray, model, model.scale, max_distance);
+	color
+}
+*/
+
+pub fn trace_pixel(lod:u8, view_lod:u8, model:&Model, screen:&Screen, camera:&Camera, x:i64, y:i64, max_distance:u64)->Color{
+	let pixel_vector = screen.at_pixel(x, y);
+	let pixel_vector = pixel_vector.rotate_at_y(camera.roll);
+	let pixel_vector = pixel_vector.rotate_at_x(camera.pitch);
+	let pixel_vector = pixel_vector.rotate_at_z(camera.yaw);
+	let pixel_ray = Ray::new(&camera.eye, pixel_vector);
 	//let color = raytracer::trace_ray(screen, lod, view_lod, pixel_ray, model, model.scale, max_distance);
 	let color = raytracer::trace_ray_normals(screen, lod, view_lod, pixel_ray, model, model.scale, max_distance);
 	color

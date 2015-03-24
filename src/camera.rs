@@ -1,3 +1,4 @@
+use std::num::Float;
 use point::Point;
 
 ///
@@ -5,7 +6,7 @@ use point::Point;
 ///
 ///
 pub struct Camera{
-	pub location:Point,
+	pub eye:Point,
 	pub pitch:f64,
 	pub yaw:f64,
 	pub roll:f64,
@@ -15,16 +16,22 @@ impl Camera{
 	
 	pub fn new(location:Point, pitch:f64, yaw:f64, roll:f64)->Camera{
 		Camera{
-			location:location,
+			eye:location,
 			pitch:pitch,
 			yaw:yaw,
 			roll:roll
 			}
 	}
 	
+	pub fn look_at(&mut self, lookat:&Point){
+		self.pitch = ((lookat.z - self.eye.z) as f64/(lookat.y - self.eye.y) as f64).atan();//along x
+		self.yaw =   ((lookat.x - self.eye.x) as f64/(lookat.y - self.eye.y) as f64).atan();//along y
+		println!("camera look at pitch:{} yaw:{}",self.pitch.to_degrees(),self.yaw.to_degrees());
+	}
+	
 	pub fn default()->Camera{
 		Camera{
-			location:Point::new(0, 0, 0),
+			eye:Point::new(0, 0, 0),
 			pitch:0.0,
 			yaw:0.0,
 			roll:0.0
@@ -36,7 +43,7 @@ impl Camera{
 impl Clone for Camera {
     fn clone(&self) -> Camera {
     	Camera{
-			location:self.location.clone(),
+			eye:self.eye.clone(),
 			pitch:self.pitch,
 			yaw:self.yaw,
 			roll:self.roll

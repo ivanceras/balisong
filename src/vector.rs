@@ -20,13 +20,11 @@ impl Vector{
     pub fn new(x:f64, y:f64, z:f64)->Vector{
         Vector{x:x, y:y, z:z}
     }
-
+    pub fn from_point(point:&Point)->Vector{
+        Vector{x:point.x as f64, y:point.y as f64, z:point.z as f64}
+    }
 	pub fn distance(&self)->f64{
 		(self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
-	}
-	
-	pub fn round(&self)->Point{
-		Point::new(self.x.round() as i64, self.y.round() as i64, self.z.round() as i64)
 	}
 	
 	pub fn unit_vector(&self)->Vector{
@@ -39,6 +37,10 @@ impl Vector{
 	
 	pub fn scale(&self, scale:f64)->Vector{
 		Vector{x:self.x * scale, y:self.y * scale, z:self.z * scale}
+	}
+	
+	pub fn negate(&self)->Vector{
+		Vector{x:self.x * -1.0, y:self.y * -1.0, z:self.z * -1.0}
 	}
 	
 	pub fn subtract_point(&self, point:&Point)->Vector{
@@ -106,6 +108,10 @@ impl Vector{
 		let z = self.y * c.sin() + self.z * c.cos();
 		Vector::new(x,y,z)
     }
+    
+    pub fn as_point(&self)->Point{
+		Point::new(self.x.round() as i64, self.y.round() as i64, self.z.round() as i64)
+	}
     
  
 	
