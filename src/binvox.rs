@@ -223,6 +223,7 @@ fn read_data(reader:&mut BufferedReader<File>, size:u64)->(Octree<bool>, Octree<
 		//try smoothing twice
 		let normals = voxelizer::smoothen_normals(&root, &normals, lod);
 		let normals = voxelizer::smoothen_normals(&root, &normals, lod);
+		let normals = voxelizer::smoothen_normals(&root, &normals, lod);
 		return (root, normals);
 		
 	}

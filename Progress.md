@@ -15,4 +15,5 @@
 	
 ##March 24, 2015
 	* Derivation of normals from voxel structure itself made progress, initial calculation. Looks ugly
+	* Made the generated normals look smooth already. Tried 1st pass and 2nd pass smoothing.
 	
