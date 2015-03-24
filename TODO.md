@@ -98,3 +98,5 @@
 		* Calculate the normals based on empty sides of the voxel data
 		* If there is no occluded neighbor, we can use the empty voxel away from  the center as the point of reference
 		* For all empty voxels (may exclude those which are close to non-empty) get the vector to this empty voxels, then get the average. It will then be use to approximate the normal
+		* Do an averaging of neighboring voxel to smoothen the normal distribution
+		* The holes is caused mainly of occluded points that is somehow hit on the ray traced, not sure whether a neighbor algorithm octree bug or raytracing bug

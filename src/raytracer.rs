@@ -69,14 +69,18 @@ pub fn trace_ray_normals(screen:&Screen, lod:u8, view_lod:u8, ray:Ray, model:&Mo
 		let photon_rel = model_loc.subtract(&photon);
 		let photon_scale = photon_rel.scale(obj_scale/view_scale).as_point();
 		if location::is_bounded(lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
-			let vec_location = location::from_xyz(lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
-			let hit = model.octree.is_location_occupied(&vec_location);
-		
+			//let hit = model.octree.is_location_occupied(&vec_location);
+			let hit = model.octree.is_point_occupied(lod, photon_scale.x, photon_scale.y, photon_scale.z);
 			if hit {
 				
 				if use_normal{
+					let vec_location = location::from_xyz(lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
 					let normal = model.normal.get(&vec_location).clone().unwrap();
 					let normal_vec = normal.unit_vector();
+					if normal.x == 0 && normal.y == 0 && normal.z == 0{
+						//println!("This normal is error...");
+						return Color::blue();
+					}
 					let light_vec = light.subtract(&photon).unit_vector();
 					let intensity = normal_vec.dot(&light_vec);
 					let color = Color::new( (127.0 * (intensity + 1.0)).round() as u8, 

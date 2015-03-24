@@ -15,7 +15,8 @@ If euclideon uses the GPU, then they may achive the same effect.
 
 A contrary to common beliefs, achieving performance is achieved through the use of sophiscticated clever algorithmns, but I believe that the way to achieve this is to employ the least possible calculations needed to achieve a goal.
 
-Euclideon mentions that they are not doing multiplication, so probably they are only using bitset operations
+Euclideon mentions that they are not doing multiplication, so probably they are only using bitset operations, how to come up with that performance requires a lot of thinking out of the box and trial and error.
+
 
 
 
