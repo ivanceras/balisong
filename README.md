@@ -32,6 +32,13 @@ cargo run --release --example render_solid_lucy
 
 then look at `./renders` directory. File output is in `.ppm` format which should be viewable in linux
 
+### A more complex scene
+
+![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/complex.png)
+
+```
+cargo run --release --example render_complex
+```
 
 #Features
 * No other library dependency except for standard rust library and extension library such as time and regex
