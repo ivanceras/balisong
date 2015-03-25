@@ -33,7 +33,8 @@ mod renderer;
 fn main() {
 	let lod = 8;
 	
-	let screen = Screen::new(800, 600, 800/2);
+	//let screen = Screen::new(800, 600, 800/2);
+	let screen = Screen::new(1920, 1080, 1920/2);
 	//let view_lod = lod;
 	let view_lod = screen.get_view_lod();
 

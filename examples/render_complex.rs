@@ -24,7 +24,7 @@ use balisong::model::Model;
 
 
 fn main() {
-	let (lod, mut root, normals) = Binvox::read_file(format!("data/solid_lucy9.binvox"));
+	let (lod, mut root, normals) = Binvox::read_file(format!("data/complex.binvox"));
 	
 	let screen = Screen::new(1920, 1080, 1920/2);
 	//let screen = Screen::new(800, 600, 800/2);
@@ -71,7 +71,7 @@ fn main() {
 	let duration = start.to(PreciseTime::now());
 	println!("Rendering took: {} seconds", duration.num_seconds());
 	
-	let filename = format!("./renders/solid_lucy{}_{}_{}_{}[{}_{}_{}].ppm",
+	let filename = format!("./renders/complex{}_{}_{}_{}[{}_{}_{}].ppm",
 		lod, view_lod, obj_scale, cam_loc, 
 		pitch.to_degrees().round(), yaw.to_degrees().round(), roll.to_degrees().round());
 	

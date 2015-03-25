@@ -63,7 +63,7 @@ impl Shape for Sphere{
     
     fn normal(&self, x:i64, y:i64, z:i64)->Normal{
         let p = Vector::new(x as f64, y as f64, z as f64);
-        let cp = p.subtract_point(&self.center);
+        let cp = p.subtract_point(&self.center).negate();
         let normal = Normal::from_vector(&cp);
         normal
     }

@@ -15,6 +15,7 @@ pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->(Octree<bool>, Octree<Norma
 	
 	// get averages on neighboring normals
 	let use_smooth_normals = true;
+	let smoothing_iteration = 4;//2 is enough
 
 
 	let limit = 1 << required_lod;
@@ -60,7 +61,10 @@ pub fn voxelize<T:Shape> (required_lod:u8, shape:T)->(Octree<bool>, Octree<Norma
 	if recalculate_normals{
 		normals = calculate_normals(&root, required_lod);
 		if use_smooth_normals{
-			normals = smoothen_normals(&root, &normals, required_lod);
+			for i in 0..smoothing_iteration{
+				println!("Pass {}.. ",i);
+				normals = smoothen_normals(&root, &normals, required_lod);
+			}
 		}
 	}
 	(root, normals)

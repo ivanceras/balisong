@@ -25,8 +25,9 @@ use balisong::renderer;
 
 
 fn main() {
-	let lod = 8;
-	let view_lod = lod;
+	let lod = 5;
+	let screen = Screen::new(1920, 1080, 1920/2);
+	let view_lod = screen.get_view_lod();
 
 	let limit = 1 << lod;
 	let r = limit as u64 / 4 as u64;//TODO: cube does not work with limit/2 don't know why
@@ -54,8 +55,6 @@ fn main() {
 	let yaw = (-60.0).to_radians();
 	let roll = (0.0).to_radians();
 	let camera = Camera::new(cam_loc.clone(), pitch, yaw, roll);
-	//let screen = Screen::new(1920, 1080, 1920/2);
-	let screen = Screen::new(800, 600, 800/2);
 	
 	let model = Model::new(Point::new(view_limit/2, view_limit/2, view_limit/2), root, normals, obj_scale);
 	let start = PreciseTime::now();

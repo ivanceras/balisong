@@ -57,6 +57,8 @@ then look at `./renders` directory. File output is in .ppm format which should b
 * Particle System - uses grid voxel, rather than octree 
 * Physics addition (https://github.com/sebcrozet/nphysics), voxel collision should be easy
 
+#Epic Roadmap
+* An open source alternative to Unlimited Detail Engine, Atomontage engine
 
 ##Previous discussion on reddit
 http://www.reddit.com/r/programming/comments/2xnlv7/3d_voxel_renderer_using_raytracing_written_in_rust/

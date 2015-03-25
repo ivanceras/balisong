@@ -219,11 +219,15 @@ fn read_data(reader:&mut BufferedReader<File>, size:u64)->(Octree<bool>, Octree<
 				//normals.set_tree(&loc, Some(Normal::from_f64(255.0-x as f64,255.0-y as f64,255.0-z as f64)));//fake normals point x
 			}
 		}
-		let normals = voxelizer::calculate_normals(&root, lod);
+		let mut normals = voxelizer::calculate_normals(&root, lod);
 		//try smoothing twice
-		let normals = voxelizer::smoothen_normals(&root, &normals, lod);
-		let normals = voxelizer::smoothen_normals(&root, &normals, lod);
-		let normals = voxelizer::smoothen_normals(&root, &normals, lod);
+		let smoothen_normals = false;
+		if smoothen_normals {
+			println!("Phase0...");
+			normals = voxelizer::smoothen_normals(&root, &normals, lod);
+			println!("Phase1...");
+			normals = voxelizer::smoothen_normals(&root, &normals, lod);
+		}
 		return (root, normals);
 		
 	}
