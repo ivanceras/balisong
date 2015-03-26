@@ -76,4 +76,4 @@ http://www.reddit.com/r/programming/comments/2xnlv7/3d_voxel_renderer_using_rayt
 
 	
 # For Updates
-Follow me on twitter: @ivanceras
+Follow me on twitter: [@ivanceras](https://twitter.com/ivanceras)
