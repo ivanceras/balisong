@@ -1,27 +1,27 @@
 use point::Point;
-use octree::Octree;
+use voxtree::Voxtree;
 use std::fmt;
 
 use normal::Normal;
 
-//an octree when put in a scene
+//an Voxtree when put in a scene
 pub struct Model{
 	pub location:Point,
-	pub octree:Octree<bool>,
-	pub normal:Octree<Normal>,
+	pub voxtree:Voxtree<bool>,
+	pub normal:Voxtree<Normal>,
 	pub scale:f64,
 }
 
 
 impl Model{
 	
-	pub fn new(location:Point, octree:Octree<bool>, normal:Octree<Normal>, scale:f64)->Model{
-		Model{location:location, octree:octree, normal:normal, scale:scale}
+	pub fn new(location:Point, voxtree:Voxtree<bool>, normal:Voxtree<Normal>, scale:f64)->Model{
+		Model{location:location, voxtree:voxtree, normal:normal, scale:scale}
 	}
 }
 
 impl fmt::Display for Model {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "location: {}, scale:{}, octree: {}", self.location, self.scale, self.octree)
+        write!(f, "location: {}, scale:{}, Voxtree: {}", self.location, self.scale, self.voxtree)
     }
 }

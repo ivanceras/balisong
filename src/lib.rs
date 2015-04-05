@@ -1,6 +1,8 @@
 extern crate time;
+extern crate regex;
 
-pub mod octree;
+pub mod constants;
+pub mod voxtree;
 pub mod point;
 pub mod shape;
 pub mod normal;
@@ -16,3 +18,5 @@ pub mod raytracer;
 pub mod model;
 pub mod binvox;
 pub mod neighbors;
+pub mod lod;
+pub mod bitset;

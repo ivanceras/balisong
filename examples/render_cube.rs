@@ -5,9 +5,8 @@ use std::num::Float;
 use std::num::SignedInt;
 use std::sync::Arc;
 use std::thread::Thread;
-use std::old_io::File;
 use time::PreciseTime;
-
+use std::f64::consts;
 
 use balisong::ray::Ray;
 use balisong::vector::Vector;
@@ -22,46 +21,45 @@ use balisong::camera::Camera;
 use balisong::voxelizer;
 use balisong::model::Model;
 use balisong::renderer;
+use balisong::lod::LOD;
 
 
 fn main() {
-	let lod = 5;
+	let lod = LOD::new(4);
 	let screen = Screen::new(1920, 1080, 1920/2);
 	let view_lod = screen.get_view_lod();
 
-	let limit = 1 << lod;
-	let r = limit as u64 / 4 as u64;//TODO: cube does not work with limit/2 don't know why
+	let limit = lod.limit as i64;
+	let r = limit as u64 / 4 as u64;
 	let cx = limit/2;
 	let cy = limit/2;
 	let cz = limit/2;
 	let center = Point::new(cx, cy, cz);
-	//let shape = Sphere::new(r, &center);
 	let shape = Cube::new(r, &center);
 	let shape_name = shape.name();
 	println!("voxelizing...{}", shape_name);
 	let start = PreciseTime::now();
-	let (mut root, normals) = voxelizer::voxelize(lod, shape);
+	let (mut root, normals) = voxelizer::voxelize(&lod, shape);
 	
 	let duration = start.to(PreciseTime::now());
 	println!("Voxelizing took: {} seconds",duration.num_seconds());
 	
 	
-	let view_limit = 1 << view_lod;
+	let view_limit = view_lod.limit as i64;
 	let obj_scale = 1.0;
 	
 	let cam_loc = Point::new(-view_limit/2, -view_limit/2, -view_limit);
 	//let cam_loc = Point::new(-view_limit, -view_limit, -view_limit);
-	let pitch = (60.0).to_radians();
-	let yaw = (-60.0).to_radians();
-	let roll = (0.0).to_radians();
+	let pitch = to_radians(60.0);
+	let yaw = to_radians(-60.0);
+	let roll = to_radians(0.0);
 	let camera = Camera::new(cam_loc.clone(), pitch, yaw, roll);
 	
 	let model = Model::new(Point::new(view_limit/2, view_limit/2, view_limit/2), root, normals, obj_scale);
 	let start = PreciseTime::now();
 	println!("Rendering...");
 
-	//let pixels = renderer::render(lod, view_lod, model, &screen, &camera);
-	let pixels = renderer::render_threaded(lod, view_lod, model, &screen, &camera);
+	let pixels = renderer::render_threaded(&lod, &view_lod, model, &screen, &camera);
 	
 	let duration = start.to(PreciseTime::now());
 	println!("Rendering took: {} seconds", duration.num_milliseconds());
@@ -75,5 +73,7 @@ fn main() {
  }
 
 
-
+fn to_radians(degree:f64)->f64{
+	degree * consts::PI / 180.0
+}
 

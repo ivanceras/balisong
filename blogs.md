@@ -21,5 +21,12 @@ Euclideon mentions that they are not doing multiplication, so probably they are 
 
 
 ##Advantages of voxel raytracing
-	* No need to worry about clipping (objects that are halfway occluded in screen space), and objects that is partially occluded by other objects.
-	* A voxel is in the view or out of the view. There is no halfway
+* No need to worry about clipping (objects that are halfway occluded in screen space), and objects that is partially occluded by other objects.
+* A voxel is in the view or out of the view. There is no halfway
+
+	
+## Algorithmns
+* The location of a voxel is express in an array of bytes.
+	* There is only 1 set bit and the rest of the bits should be 0.
+	* The set bit is position of the voxel relative to the other 7 siblins.
+* Traversing through the

@@ -1,16 +1,20 @@
 extern crate regex;
 
-use std::old_io::File;
+use std::path::Path;
+use std::fs::File;
 use point::Point;
 use vector::Vector;
-use std::old_io::BufferedReader;
+use std::io::BufRead;
+use std::io::BufReader;
 use std::str::FromStr;
 use std::num::Float;
 use color::Color;
 use location;
-use octree::Octree;
+use voxtree::Voxtree;
 use normal::Normal;
 use voxelizer;
+use lod::LOD;
+use constants;
 
 pub struct Binvox{
 	version:String,
@@ -21,15 +25,15 @@ pub struct Binvox{
 
 impl Binvox{
 	
-	pub fn read_file(filename:String)->(u8, Octree<bool>, Octree<Normal>){
-		let path = Path::new(filename);
+	pub fn read_file(filename:String)->(LOD, Voxtree<bool>, Voxtree<Normal>){
+		let path = Path::new(&filename);
     	let display = path.display();	
 	    let mut file = match File::open(&path) {
-	        Err(why) => panic!("couldn't open {}: {}", display, why.desc),
+	        Err(why) => panic!("couldn't open {}", display),
 	        Ok(file) => file,
 	    };
 	    
-	    let mut reader = BufferedReader::new(file);
+	    let mut reader = BufReader::new(file);
 
 		//read header version	
 		let version = read_header(&mut reader);
@@ -38,7 +42,7 @@ impl Binvox{
 		let scale = read_scaling(&mut reader);	
 		let size = xlimit * ylimit * zlimit;
 		println!("size: {}", size);
-		let (octree, normals) = read_data(&mut reader, size);
+		let (Voxtree, normals) = read_data(&mut reader, size);
 		
 		let binvox = Binvox{
 					version: version, 
@@ -47,18 +51,19 @@ impl Binvox{
 					scale: scale
 				};
 		let size = xlimit * ylimit * zlimit;
-		let lod = lod_from_size(size);
+		let lod = LOD::from_volume(size);
 		
-		(lod, octree, normals)
+		(lod, Voxtree, normals)
 				
 	}
 
 }
 
 
-fn read_header(reader:&mut BufferedReader<File>)->String{
-		//read header version		
-    let mut line = match reader.read_line() {
+fn read_header(reader:&mut BufRead)->String{
+		//read header version
+	let mut buff = String::new();
+    let mut line = match reader.read_line(&mut buff) {
         Err(why) => panic!("error reading header"),
         Ok(string) => string,
     };
@@ -66,19 +71,19 @@ fn read_header(reader:&mut BufferedReader<File>)->String{
 	    Ok(re) => re,
 	    Err(err) => panic!("{}", err),
 	};
-	if re.is_match(line.as_slice()){
-		let cap = re.captures(line.as_slice()).unwrap();
+	if re.is_match(&buff){
+		let cap = re.captures(&buff).unwrap();
 		let version = cap.at(2).unwrap();
-		println!("version: {}",version);
-		return String::from_str(version);
+		return format!("{}",version);
 	}
 	else{
 		panic!("invalid binvox format at binvox!");
 	}
 }
 
-fn read_dim(reader:&mut BufferedReader<File>)->(u64, u64, u64){
-	let mut line = match reader.read_line() {
+fn read_dim(reader:&mut BufRead)->(u64, u64, u64){
+	let mut buff = String::new();
+	let mut line = match reader.read_line(&mut buff) {
         Err(why) => panic!("couldn't read dimension"),
         Ok(string) => string,
     };
@@ -87,8 +92,8 @@ fn read_dim(reader:&mut BufferedReader<File>)->(u64, u64, u64){
 	    Ok(re) => re,
 	    Err(err) => panic!("{}", err),
 	};
-	if re.is_match(line.as_slice()){
-		let cap = re.captures(line.as_slice()).unwrap();
+	if re.is_match(&buff){
+		let cap = re.captures(&buff).unwrap();
 		let dimx = cap.at(2).unwrap();
 		let dimy = cap.at(3).unwrap();
 		let dimz = cap.at(4).unwrap();
@@ -104,8 +109,9 @@ fn read_dim(reader:&mut BufferedReader<File>)->(u64, u64, u64){
 	}
 }
 
-fn read_translation(reader:&mut BufferedReader<File>)->(f64, f64, f64){
-	let mut line = match reader.read_line() {
+fn read_translation(reader:&mut BufRead)->(f64, f64, f64){
+	let mut buff = String::new();
+	let mut line = match reader.read_line(&mut buff) {
         Err(why) => panic!("couldn't read translation"),
         Ok(string) => string,
     };
@@ -114,8 +120,8 @@ fn read_translation(reader:&mut BufferedReader<File>)->(f64, f64, f64){
 	    Ok(re) => re,
 	    Err(err) => panic!("{}", err),
 	};
-	if re.is_match(line.as_slice()){
-		let cap = re.captures(line.as_slice()).unwrap();
+	if re.is_match(&buff){
+		let cap = re.captures(&buff).unwrap();
 		for i in 0..cap.len(){
 			println!("cap: {}",cap.at(i).unwrap());
 		}
@@ -134,8 +140,9 @@ fn read_translation(reader:&mut BufferedReader<File>)->(f64, f64, f64){
 	}	
 }
 
-fn read_scaling(reader:&mut BufferedReader<File>)->f64{
-	let mut line = match reader.read_line() {
+fn read_scaling(reader:&mut BufRead)->f64{
+	let mut buff = String::new();
+	let mut line = match reader.read_line(&mut buff) {
         Err(why) => panic!("couldn't read scaling"),
         Ok(string) => string,
     };
@@ -144,8 +151,8 @@ fn read_scaling(reader:&mut BufferedReader<File>)->f64{
 	    Ok(re) => re,
 	    Err(err) => panic!("{}", err),
 	};
-	if re.is_match(line.as_slice()){
-		let cap = re.captures(line.as_slice()).unwrap();
+	if re.is_match(&buff){
+		let cap = re.captures(&buff).unwrap();
 		let scale = cap.at(2).unwrap();
 		println!("scale: {}",scale);
 		return f64::from_str(scale).unwrap();
@@ -155,11 +162,11 @@ fn read_scaling(reader:&mut BufferedReader<File>)->f64{
 	}
 }
 
-fn read_data(reader:&mut BufferedReader<File>, size:u64)->(Octree<bool>, Octree<Normal>){
+fn read_data(reader:&mut BufRead, size:u64)->(Voxtree<bool>, Voxtree<Normal>){
 	
-	let lod = lod_from_size(size);
-	println!("lod: {}",lod);
-	let mut line = match reader.read_line() {
+	let lod = LOD::from_volume(size);
+	let mut buff = String::new();
+	let mut line = match reader.read_line(&mut buff) {
         Err(why) => panic!("couldn't read data"),
         Ok(string) => string,
     };
@@ -168,8 +175,8 @@ fn read_data(reader:&mut BufferedReader<File>, size:u64)->(Octree<bool>, Octree<
 	    Ok(re) => re,
 	    Err(err) => panic!("{}", err),
 	};
-	if re.is_match(line.as_slice()){
-		let cap = re.captures(line.as_slice()).unwrap();
+	if re.is_match(&buff){
+		let cap = re.captures(&buff).unwrap();
 		let data = cap.at(1).unwrap();
 		println!("data: {}",data);
 		
@@ -177,21 +184,25 @@ fn read_data(reader:&mut BufferedReader<File>, size:u64)->(Octree<bool>, Octree<
 		let mut nr_voxels = 0u64;
 		let mut index = 0u64;
 		let mut linear_voxels = Vec::new();
-		while end_index < size {
-				let value = reader.read_u8().unwrap();
-				let count = reader.read_u8().unwrap();
+		let mut buff:Vec<u8> = Vec::new();
+		reader.read_to_end(&mut buff);
+		let mut i = 0;
+		while i < buff.len() {
+				let value = buff[i];
+				let count = buff[i+1];
+				//println!("value: {}, count:{}", value, count);
 				end_index = index + count as u64;
 				if end_index > size {break;}
-				for i in index..end_index {
+				for j in index..end_index {
 					linear_voxels.push(value);
 				}
 				if value > 0 {nr_voxels += count as u64;}	
 				index = end_index;
+				i+=2;
 		}
 		
 		println!("There are {} voxels",linear_voxels.len());
-		let mut root = Octree::new();
-		//let mut normals = Octree::new();
+		let mut root = Voxtree::new();
 		println!("loading binvox....");
 		let mut percentage = 0;
 		for i in 0..linear_voxels.len(){
@@ -201,32 +212,15 @@ fn read_data(reader:&mut BufferedReader<File>, size:u64)->(Octree<bool>, Octree<
 			}
 			percentage = new_percentage;
 			let value = linear_voxels[i];
-			let is_last2_empty = if i > 1 {linear_voxels[i - 2] == 0}else{ false };
-			let is_last1_empty = if i > 0 {linear_voxels[i - 1] == 0}else{ false };
-			let is_next1_empty = if i < linear_voxels.len() -1 {linear_voxels[i + 1] == 0 } else { false };
-			let is_next2_empty = if i < linear_voxels.len() -2 {linear_voxels[i + 2] == 0 } else { false };
-			//TODO: checking is on the neighboring voxel, there are 16 neighbors
-			//carving enabled to save a lot of memory
-			//optimize, only when it changes from 0 to 1 or 1 to zero, store the tree
-			//if value > 0 && (is_next2_empty || is_next1_empty || is_last1_empty || is_last2_empty ){
-			//if value > 0 && (is_next2_empty || is_last2_empty ){
-			//if value > 0 && (is_next1_empty || is_last1_empty ){
 			if value > 0 {//no carving
-				let (x,y,z) = location::index_to_xyz(lod, i as u64);
-				//let (x,z,y) = location::index_to_xzy(lod, i as u64);
-				let loc =  location::from_xyz(lod, x, y, z);
-				root.set_tree(&loc, Some(true));
-				//normals.set_tree(&loc, Some(Normal::from_f64(255.0-x as f64,255.0-y as f64,255.0-z as f64)));//fake normals point x
+				let (x,y,z) = location::index_to_xyz(&lod, i as u64);
+				let loc =  location::from_xyz(&lod, x, y, z);
+				root.set_tree_non_recursive(&loc, &mut Some(true));
 			}
 		}
-		let mut normals = voxelizer::calculate_normals(&root, lod);
-		//try smoothing twice
-		let smoothen_normals = false;
-		if smoothen_normals {
-			println!("Phase0...");
-			normals = voxelizer::smoothen_normals(&root, &normals, lod);
-			println!("Phase1...");
-			normals = voxelizer::smoothen_normals(&root, &normals, lod);
+		let mut normals = Voxtree::new();
+		if constants::PRECALCULATE_NORMALS{
+			normals = voxelizer::calculate_normals(&root, &lod);
 		}
 		return (root, normals);
 		
@@ -236,8 +230,3 @@ fn read_data(reader:&mut BufferedReader<File>, size:u64)->(Octree<bool>, Octree<
 	}	
 }
 
-fn lod_from_size(size:u64)->u8{
-	let limit = (size as f64).cbrt();
-	let lod = limit.log2();
-	lod as u8
-}

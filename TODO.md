@@ -102,6 +102,24 @@
 		* The holes is caused mainly of occluded points that is somehow hit on the ray traced, not sure whether a neighbor algorithm octree bug or raytracing bug
 		
 
-##Match 25, 2015
+##March 25, 2015
 	* Fix camera and lightning orientation, right now it doesn't feel right.
 	* Use quarternion for camera
+	
+##March 29, 2015
+	* Make the decision of which occluded/empty voxel is the best candidate. Best Occuded voxel candidate is along with the center of mass of the object. Best empty voxel candidate is away from the object center of mass.
+		* The vectors are along when their dot product is close to 1.
+		* The vectors are away when their dot product is close to -1.
+		
+##April 2, 2015
+	* Implement the octree to use 64bit bitset value. That is 1 voxel will be subdivided into 64 sub voxels
+	
+##April 3, 2015 
+	* Calculate only the normal of the point when it is hit by the ray.
+	* Calculate only the points when it is hit by the ray (equation based rendering)
+	* Traversal of voxtree to calculate the points only that are part in the node/geometry
+	* Research on arranging the bitsets in an array to optimize memory consumption
+	
+##April 5, 2015
+    * Fast counting of bitsets
+    * http://stackoverflow.com/questions/109023/how-to-count-the-number-of-set-bits-in-a-32-bit-integer	

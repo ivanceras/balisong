@@ -1,11 +1,12 @@
 use vector::Vector;
 use location;
-use octree::Octree;
+use voxtree::Voxtree;
 use point::Point;
+use lod::LOD;
 
 
 /// get all the points that are neighbor to this location
-pub  fn  get_neighbors<T> (node:&Octree<T>, lod:u8, point:&Point, neighbors_dir:&Vec<Vector>)->Vec<Point>{
+pub  fn  get_neighbors<T> (node:&Voxtree<T>, lod:&LOD, point:&Point, neighbors_dir:&Vec<Vector>)->Vec<Point>{
 	let vec_loc = Vector::from_point(point);
 	let mut neighbors_loc = Vec::new();
 	for i in 0..neighbors_dir.len(){
@@ -19,7 +20,7 @@ pub  fn  get_neighbors<T> (node:&Octree<T>, lod:u8, point:&Point, neighbors_dir:
 }
 
 /// get all non-occluded neighbors
-pub  fn  get_non_occluded_neighbors<T> (node:&Octree<T>, lod:u8, point:&Point, neighbors_dir:&Vec<Vector>)->Vec<Point>{
+pub  fn  get_non_occluded_neighbors<T> (node:&Voxtree<T>, lod:&LOD, point:&Point, neighbors_dir:&Vec<Vector>)->Vec<Point>{
 	let vec_loc = Vector::from_point(point);
 	let mut neighbors_loc = Vec::new();
 	for i in 0..neighbors_dir.len(){
@@ -33,7 +34,7 @@ pub  fn  get_non_occluded_neighbors<T> (node:&Octree<T>, lod:u8, point:&Point, n
 }
 
 /// get all empty neighbors at this directions
-pub  fn  get_empty_neighbors<T> (node:&Octree<T>, lod:u8, point:&Point, neighbors_dir:&Vec<Vector>)->Vec<Point>{
+pub  fn  get_empty_neighbors<T> (node:&Voxtree<T>, lod:&LOD, point:&Point, neighbors_dir:&Vec<Vector>)->Vec<Point>{
 	let vec_loc = Vector::from_point(point);
 	let mut neighbors_loc = Vec::new();
 	for i in 0..neighbors_dir.len(){
@@ -47,7 +48,7 @@ pub  fn  get_empty_neighbors<T> (node:&Octree<T>, lod:u8, point:&Point, neighbor
 }
 
 
-///return octree that is part of the 6 face neighbors, these are the closes neighbor
+///return Voxtree that is part of the 6 face neighbors, these are the closes neighbor
 ///            ================
 ///             6 face neighbors          
 ///            ================
@@ -57,7 +58,7 @@ pub  fn  get_empty_neighbors<T> (node:&Octree<T>, lod:u8, point:&Point, neighbor
 ///             0  0 -1
 ///             0 -1  0
 ///            -1  0  0
-pub  fn  get_face_neighbors<T> (node:&Octree<T>, lod:u8, point:&Point)->Vec<Point>{
+pub  fn  get_face_neighbors<T> (node:&Voxtree<T>, lod:&LOD, point:&Point)->Vec<Point>{
 	let neighbor_loc = vec![
 			Vector::new( 0.0, 0.0, 1.0),
 			Vector::new( 0.0, 1.0, 0.0),
@@ -70,7 +71,7 @@ pub  fn  get_face_neighbors<T> (node:&Octree<T>, lod:u8, point:&Point)->Vec<Poin
 	get_neighbors(node, lod, point, &neighbor_loc)
 }
 
-pub  fn  get_empty_face_neighbors<T> (node:&Octree<T>, lod:u8, point:&Point)->Vec<Point>{
+pub  fn  get_empty_face_neighbors<T> (node:&Voxtree<T>, lod:&LOD, point:&Point)->Vec<Point>{
 	let neighbor_loc = vec![
 			Vector::new( 0.0, 0.0, 1.0),
 			Vector::new( 0.0, 1.0, 0.0),
@@ -83,9 +84,9 @@ pub  fn  get_empty_face_neighbors<T> (node:&Octree<T>, lod:u8, point:&Point)->Ve
 	get_empty_neighbors(node, lod, point, &neighbor_loc)
 }
 
-/// return the array of octrees that fall on the 8 edges, these are the farthest neighbors
+/// return the array of Voxtrees that fall on the 8 vertexs, these are the farthest neighbors
 ///            ================
-///             8 edges         
+///             8 vertexs         
 ///            ================        	
 ///            -1 -1 -1 
 ///            -1 -1  1
@@ -95,7 +96,7 @@ pub  fn  get_empty_face_neighbors<T> (node:&Octree<T>, lod:u8, point:&Point)->Ve
 ///             1 -1  1
 ///             1  1 -1	
 ///             1  1  1 
-pub fn get_edge_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Point>{
+pub fn get_vertex_neighbors<T>(node:&Voxtree<T>, lod:&LOD, point:&Point)->Vec<Point>{
 	let neighbor_loc = vec![
 			Vector::new(-1.0,-1.0,-1.0),
 			Vector::new(-1.0,-1.0, 1.0),
@@ -110,7 +111,7 @@ pub fn get_edge_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Point>{
 	get_neighbors(node, lod, point, &neighbor_loc)
 }
 
-pub fn get_empty_edge_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Point>{
+pub fn get_empty_vertex_neighbors<T>(node:&Voxtree<T>, lod:&LOD, point:&Point)->Vec<Point>{
 	let neighbor_loc = vec![
 			Vector::new(-1.0,-1.0,-1.0),
 			Vector::new(-1.0,-1.0, 1.0),
@@ -125,10 +126,10 @@ pub fn get_empty_edge_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<P
 	get_empty_neighbors(node, lod, point, &neighbor_loc)
 }
 
-/// return the array of octree that falls on the 12 side neighbors, these are the second closes neighbors
+/// return the array of Voxtree that falls on the 12 edge neighbors, these are the second closes neighbors
 ///
 ///             ================
-///             12 side neighbors       
+///             12 edge neighbors       
 ///             ================   
 ///             
 ///             0  1  1
@@ -147,7 +148,7 @@ pub fn get_empty_edge_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<P
 ///             1 -1  0
 ///             1  0 -1
 
-pub fn get_side_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Point>{
+pub fn get_edge_neighbors<T>(node:&Voxtree<T>, lod:&LOD, point:&Point)->Vec<Point>{
 	let neighbor_loc = vec![
 			Vector::new( 0.0, 1.0, 1.0),
 			Vector::new( 1.0, 0.0, 1.0),
@@ -169,7 +170,7 @@ pub fn get_side_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Point>{
 	get_neighbors(node, lod, point, &neighbor_loc)	
 }
 
-pub fn get_empty_side_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Point>{
+pub fn get_empty_edge_neighbors<T>(node:&Voxtree<T>, lod:&LOD, point:&Point)->Vec<Point>{
 	let neighbor_loc = vec![
 			Vector::new( 0.0, 1.0, 1.0),
 			Vector::new( 1.0, 0.0, 1.0),
@@ -192,7 +193,7 @@ pub fn get_empty_side_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<P
 }
 
 
-pub fn get_all_non_occluded_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Point>{
+pub fn get_all_non_occluded_neighbors<T>(node:&Voxtree<T>, lod:&LOD, point:&Point)->Vec<Point>{
 	let neighbor_loc = vec![
 			//face neighbors
 			Vector::new( 0.0, 0.0, 1.0),
@@ -201,7 +202,7 @@ pub fn get_all_non_occluded_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)-
 			Vector::new( 0.0, 0.0,-1.0),
 			Vector::new( 0.0,-1.0, 0.0),
 			Vector::new(-1.0, 0.0, 0.0),
-			//edge neighbors
+			//vertex neighbors
 			Vector::new(-1.0,-1.0,-1.0),
 			Vector::new(-1.0,-1.0, 1.0),
 			Vector::new(-1.0, 1.0,-1.0),
@@ -211,7 +212,7 @@ pub fn get_all_non_occluded_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)-
 			Vector::new( 1.0, 1.0,-1.0),
 			Vector::new( 1.0, 1.0, 1.0),
 			
-			//side neighbors
+			//edge neighbors
 			Vector::new( 0.0, 1.0, 1.0),
 			Vector::new( 1.0, 0.0, 1.0),
 			Vector::new( 1.0, 1.0, 0.0),
@@ -230,7 +231,7 @@ pub fn get_all_non_occluded_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)-
 }
 
 
-pub fn get_all_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Point>{
+pub fn get_all_neighbors<T>(node:&Voxtree<T>, lod:&LOD, point:&Point)->Vec<Point>{
 	let neighbor_loc = vec![
 			//face neighbors
 			Vector::new( 0.0, 0.0, 1.0),
@@ -240,7 +241,7 @@ pub fn get_all_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Point>{
 			Vector::new( 0.0,-1.0, 0.0),
 			Vector::new(-1.0, 0.0, 0.0),
 	
-			//edge neighbors
+			//vertex neighbors
 			Vector::new(-1.0,-1.0,-1.0),
 			Vector::new(-1.0,-1.0, 1.0),
 			Vector::new(-1.0, 1.0,-1.0),
@@ -250,7 +251,7 @@ pub fn get_all_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Point>{
 			Vector::new( 1.0, 1.0,-1.0),
 			Vector::new( 1.0, 1.0, 1.0),
 			
-			//side neighbors
+			//edge neighbors
 			Vector::new( 0.0, 1.0, 1.0),
 			Vector::new( 1.0, 0.0, 1.0),
 			Vector::new( 1.0, 1.0, 0.0),
@@ -268,7 +269,7 @@ pub fn get_all_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Point>{
 	get_neighbors(node, lod, point, &neighbor_loc)	
 }
 
-pub fn get_all_empty_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Point>{
+pub fn get_all_empty_neighbors<T>(node:&Voxtree<T>, lod:&LOD, point:&Point)->Vec<Point>{
 	let neighbor_loc = vec![
 			//face neighbors
 			Vector::new( 0.0, 0.0, 1.0),
@@ -278,7 +279,7 @@ pub fn get_all_empty_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Po
 			Vector::new( 0.0,-1.0, 0.0),
 			Vector::new(-1.0, 0.0, 0.0),
 	
-			//edge neighbors
+			//vertex neighbors
 			Vector::new(-1.0,-1.0,-1.0),
 			Vector::new(-1.0,-1.0, 1.0),
 			Vector::new(-1.0, 1.0,-1.0),
@@ -288,7 +289,7 @@ pub fn get_all_empty_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Po
 			Vector::new( 1.0, 1.0,-1.0),
 			Vector::new( 1.0, 1.0, 1.0),
 			
-			//side neighbors
+			//edge neighbors
 			Vector::new( 0.0, 1.0, 1.0),
 			Vector::new( 1.0, 0.0, 1.0),
 			Vector::new( 1.0, 1.0, 0.0),
@@ -306,23 +307,23 @@ pub fn get_all_empty_neighbors<T>(node:&Octree<T>, lod:u8, point:&Point)->Vec<Po
 	get_empty_neighbors(node, lod, point, &neighbor_loc)	
 }
 /// returns true if all the 6 face neighbors are occupied
-pub fn is_occluded<T>(node:&Octree<T>, lod:u8, point:&Point)->bool{
+pub fn is_occluded<T>(node:&Voxtree<T>, lod:&LOD, point:&Point)->bool{
 	//get_face_neighbors(node, lod, point).len() == 6 //completely occluded
 	get_all_neighbors(node, lod, point).len() == 26 //26 neighbors
 }
 
-pub fn is_semi_occluded<T>(node:&Octree<T>, lod:u8, point:&Point)->bool{
+pub fn is_semi_occluded<T>(node:&Voxtree<T>, lod:&LOD, point:&Point)->bool{
 	//get_face_neighbors(node, lod, point).len() == 6 ||
-	//get_side_neighbors(node, lod, point).len() == 12 ||
-	//get_edge_neighbors(node, lod, point).len() == 8
+	//get_edge_neighbors(node, lod, point).len() == 12 ||
+	//get_vertex_neighbors(node, lod, point).len() == 8
 	get_all_neighbors(node, lod, point).len() > 12
 }
 
 //get the closes occluded neighbor
-pub fn get_closest_occluded_neighbor(node:&Octree<bool>, lod:u8, point:&Point)->Option<Point>{
+pub fn get_closest_occluded_neighbor(node:&Voxtree<bool>, lod:&LOD, point:&Point)->Option<Point>{
 	let face_neighbors = get_face_neighbors(node, lod, point);
-	let side_neighbors = get_side_neighbors(node, lod, point);
 	let edge_neighbors = get_edge_neighbors(node, lod, point);
+	let vertex_neighbors = get_vertex_neighbors(node, lod, point);
 	
 	for i in 0..face_neighbors.len(){
 		if is_occluded(node, lod, &face_neighbors[i]){
@@ -330,35 +331,133 @@ pub fn get_closest_occluded_neighbor(node:&Octree<bool>, lod:u8, point:&Point)->
 		}
 	}
 	
-	for j in 0..side_neighbors.len(){
-		if is_occluded(node, lod, &side_neighbors[j]){
-			return Some((&side_neighbors[j]).clone());
+	for j in 0..edge_neighbors.len(){
+		if is_occluded(node, lod, &edge_neighbors[j]){
+			return Some((&edge_neighbors[j]).clone());
 		}
 	}
 	
-	for k in 0..edge_neighbors.len(){
-		if is_occluded(node, lod, &edge_neighbors[k]){
-			return Some((&edge_neighbors[k]).clone());
+	for k in 0..vertex_neighbors.len(){
+		if is_occluded(node, lod, &vertex_neighbors[k]){
+			return Some((&vertex_neighbors[k]).clone());
 		}
 	}
 	None
 }
 
-pub fn get_closest_empty_neighbor(node:&Octree<bool>, lod:u8, point:&Point)->Option<Point>{
+/// the occluded point towards the center of the body the dot product of the two vectors is approaching 1.0
+pub fn get_closest_occluded_neighbor_towards_center(node:&Voxtree<bool>, lod:&LOD, point:&Point)->Option<Point>{
+	//println!("getting the closest occluded neighbor towards center...");
+	let limit = lod.limit as i64;
+	let center = Point::new(limit/2, limit/2, limit/2);
+	let vec_center = Vector::from_point(&center).unit_vector();
+	
+	let face_neighbors = get_face_neighbors(node, lod, point);
+	let edge_neighbors = get_edge_neighbors(node, lod, point);
+	let vertex_neighbors = get_vertex_neighbors(node, lod, point);
+	
+	let max_dot = -1.0;
+	let mut closest = None;
+	for i in 0..face_neighbors.len(){
+		//println!("i : {} of {}",i,face_neighbors.len());
+		if is_occluded(node, lod, &face_neighbors[i]){
+			let vec_point = Vector::from_point(&face_neighbors[i]).unit_vector();
+			let dot = vec_center.dot(&vec_point);
+			//println!("face dot: {} max_dot: {} dot > max_dot: {}",dot, max_dot, dot > max_dot);
+			if dot > max_dot{
+				//println!("Yes dot is greater than max_dot!");
+				max_dot == dot;
+				closest = Some((&face_neighbors[i]).clone());
+			}
+		}
+	}
+	
+	for j in 0..edge_neighbors.len(){
+		if is_occluded(node, lod, &edge_neighbors[j]){
+			let vec_point = Vector::from_point(&edge_neighbors[j]).unit_vector();
+			let dot = vec_center.dot(&vec_point);
+			//println!("edge dot: {} max_dot: {} dot > max_dot: {}",dot, max_dot, dot > max_dot);
+			if dot > max_dot{
+				//println!("Yes dot is greater than max_dot!");
+				max_dot == dot;
+				closest = Some((&edge_neighbors[j]).clone());
+			}
+		}
+	}
+	
+	for k in 0..vertex_neighbors.len(){
+		if is_occluded(node, lod, &vertex_neighbors[k]){
+			let vec_point = Vector::from_point(&vertex_neighbors[k]).unit_vector();
+			let dot = vec_center.dot(&vec_point);
+			//println!("vertex dot: {} max_dot: {} dot > max_dot: {}",dot, max_dot, dot > max_dot);
+			if dot > max_dot{
+				//println!("Yes dot is greater than max_dot!");
+				max_dot == dot;
+				closest = Some((&vertex_neighbors[k]).clone());
+			}
+		}
+	}
+	//let got = closest.clone();
+	//if got.is_some(){
+	//	println!("got {}", got.unwrap());
+	//}
+	closest
+}
+
+pub fn get_closest_empty_neighbor(node:&Voxtree<bool>, lod:&LOD, point:&Point)->Option<Point>{
 	let empty_face_neighbors = get_empty_face_neighbors(node, lod, point);
-	let empty_side_neighbors = get_empty_side_neighbors(node, lod, point);
 	let empty_edge_neighbors = get_empty_edge_neighbors(node, lod, point);
+	let empty_vertex_neighbors = get_empty_vertex_neighbors(node, lod, point);
 	
 	for i in 0..empty_face_neighbors.len(){
 		return Some((&empty_face_neighbors[i]).clone());
 	}
 	
-	for j in 0..empty_side_neighbors.len(){
-		return Some((&empty_side_neighbors[j]).clone());
+	for j in 0..empty_edge_neighbors.len(){
+		return Some((&empty_edge_neighbors[j]).clone());
 	}
 	
-	for k in 0..empty_edge_neighbors.len(){
-		return Some((&empty_edge_neighbors[k]).clone());
+	for k in 0..empty_vertex_neighbors.len(){
+		return Some((&empty_vertex_neighbors[k]).clone());
 	}
 	None
+}
+
+/// closes point away from center's dot product approaches -1.0
+pub fn get_closest_empty_neighbor_away_center(node:&Voxtree<bool>, lod:&LOD, point:&Point)->Option<Point>{
+	let empty_face_neighbors = get_empty_face_neighbors(node, lod, point);
+	let empty_edge_neighbors = get_empty_edge_neighbors(node, lod, point);
+	let empty_vertex_neighbors = get_empty_vertex_neighbors(node, lod, point);
+	
+	let limit = lod.limit as i64;
+	let center = Point::new(limit/2, limit/2, limit/2);
+	let vec_center = Vector::from_point(&center).unit_vector();
+	
+	let min_dot = 1.0;
+	let mut closest = None;
+	
+	for i in 0..empty_face_neighbors.len(){
+		let vec_point = Vector::from_point(&empty_face_neighbors[i]).unit_vector();
+		let dot = vec_center.dot(&vec_point);
+		if dot < min_dot{
+			closest = Some((&empty_face_neighbors[i]).clone())
+		}
+	}
+	
+	for j in 0..empty_edge_neighbors.len(){
+		let vec_point = Vector::from_point(&empty_edge_neighbors[j]).unit_vector();
+		let dot  = vec_center.dot(&vec_point);
+		if dot < min_dot{
+			closest = Some((&empty_edge_neighbors[j]).clone());
+		}
+	}
+	
+	for k in 0..empty_vertex_neighbors.len(){
+		let vec_point = Vector::from_point(&empty_vertex_neighbors[k]).unit_vector();
+		let dot = vec_center.dot(&vec_point);
+		if dot < min_dot{
+			closest = Some((&empty_vertex_neighbors[k]).clone());
+		}
+	}
+	closest
 }
