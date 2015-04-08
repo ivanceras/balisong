@@ -35,3 +35,7 @@
 * Reduced memory size from 6.4 GB(fully solid) to 5.3 GB(fully solid, ommited booleans) to 900 MB(carved out) to 713 MB(carved out normals only) by carving out completely occluded voxels. Using empty voxtree saves up to 1.1GB of unrequired contents
 	* Fully solid (6.4 GB) - 26,637,838 solid voxels, occluded included  (2 % of the maximum space)
 	* Carved out (720 MB)  - 2,102,146 surface voxels (8% of the total solid) (0.20 % of the maximum space)
+	
+	
+	*KTM 10,275,626 solid voxels, carved 1,681,220 voxels
+	

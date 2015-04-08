@@ -27,7 +27,7 @@ The gold color in hardcoded in the raytracer. So, everything will be golden.
 Fully solid statue has 26,637,838 voxels (includes the occluded voxels, which is 2% of the total maximum grid space). Consumes a whooping 6.4 GiB of memory
 
 The final carved out statue contains 2,102,146 surface voxels which is 8% of the total solid statue and 0.20% of the maximum space grid space.
-It consumed only 700 MiB of memory which inlcuded the calculated normals for each surface voxel.
+It consumed only 700 MiB of memory which includes the calculated normals for each surface voxel.
 
 
 #Features

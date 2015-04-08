@@ -227,7 +227,7 @@ fn read_data(reader:&mut BufRead, size:u64)->Voxtree<Normal>{
 		}
 		//let carved = voxelizer::carve_out(&root, &lod);
 		drop(root);
-		let use_smooth_normals = false;
+		let use_smooth_normals = true;
 		let smoothing_iteration = 1;//2 is enough
 		if use_smooth_normals{
 			for i in 0..smoothing_iteration{
