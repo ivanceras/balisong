@@ -48,19 +48,19 @@ fn main() {
 	let shape_name = shape.name();
 	println!("voxelizing...{}", shape_name);
 	let start = PreciseTime::now();
-	let (mut root, normals) = voxelizer::voxelize(&lod, shape);
+	let normals = voxelizer::voxelize(&lod, shape);
 	//voxelizer::calculate_normals(&root, lod);
 	
 	let duration = start.to(PreciseTime::now());
 	println!("Voxelizing took: {} seconds",duration.num_seconds());
 	let voxel_grid_size = limit * limit * limit;
 	println!("voxel grid size: {}", voxel_grid_size);
-	let total_nodes = root.count_nodes();
+	let total_nodes = normals.count_nodes();
 	println!("There are {} total nodes", total_nodes);
 	let empty = voxel_grid_size as i64 - total_nodes as i64;
 	println!("empty: {} {}%", empty, (100.0 * empty as f64/voxel_grid_size as f64).round());
 	println!("filled {} %", (100.0 * total_nodes as f64 / voxel_grid_size as f64).round());
-	let leaf_nodes = root.count_leaf();
+	let leaf_nodes = normals.count_leaf();
 	println!("There are {} leaf nodes {}%", leaf_nodes, (100.0 * leaf_nodes as f64 / total_nodes as f64).round());
 	
 	let view_limit = view_lod.limit as i64;
@@ -79,7 +79,7 @@ fn main() {
 	let start = PreciseTime::now();
 	println!("Rendering...");
 	
-	let model = Model::new(Point::new(view_limit/2, view_limit/2, view_limit/2), root, normals, obj_scale);
+	let model = Model::new(Point::new(view_limit/2, view_limit/2, view_limit/2), normals, obj_scale);
 	//let model = Model::new(Point::new(0, 0, 0), root, normals, obj_scale);
 	
 	let pixels = renderer::render_threaded(&lod, &view_lod, model, &screen, &camera);

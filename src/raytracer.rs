@@ -33,7 +33,7 @@ pub fn trace_ray(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:Ray, model:&Model,
 		let photon_scale = photon_rel.scale(obj_scale/view_scale).as_point();
 		if location::is_bounded(lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
 			let vec_location = location::from_xyz(lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
-			let hit = model.voxtree.is_location_occupied(&vec_location);
+			let hit = model.normal.is_location_occupied(&vec_location);
 		
 			if hit {
 				return Color::new(
@@ -74,7 +74,7 @@ pub fn trace_ray_normals(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:Ray, model
 		let photon_scale = photon_rel.scale(obj_scale/view_scale).as_point();
 		if location::is_bounded(lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
 			//let hit = model.octree.is_location_occupied(&vec_location);
-			let hit = model.voxtree.is_point_occupied(lod, photon_scale.x, photon_scale.y, photon_scale.z);
+			let hit = model.normal.is_point_occupied(lod, photon_scale.x, photon_scale.y, photon_scale.z);
 			if hit {
 				
 				if use_normal{
@@ -83,7 +83,7 @@ pub fn trace_ray_normals(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:Ray, model
 					//Normal is only calculated when it hits the point
 					let normal = if constants::PRECALCULATE_NORMALS{
 						model.normal.get(&vec_location).clone().unwrap()
-					}else{voxelizer::calculate_point_normal(&model.voxtree, lod, &photon_scale)};
+					}else{voxelizer::calculate_point_normal(&model.normal, lod, &photon_scale)};
 					
 					let normal_vec = normal.unit_vector();
 					if normal.x == 0 && normal.y == 0 && normal.z == 0{
@@ -104,8 +104,13 @@ pub fn trace_ray_normals(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:Ray, model
 					let object_color = Color::new( (255.0/2.0 * (intensity + 1.0)).round() as u8, 
 											(233.0/2.0 * (intensity + 1.0)).round() as u8, 
 											(0.0/2.0 * (intensity + 1.0)).round() as u8);
-					
-					return blend(object_color, color);
+					let fcolor = blend(object_color, color);
+					if constants::USE_GAMMA_CORRECTION{
+						return gamma_correction(fcolor);
+					}
+					else{
+						return fcolor;
+					}
 				}
 				else{
 					return Color::new(
@@ -125,5 +130,16 @@ fn blend(color1:Color, color2:Color)->Color{
 	let red   =  ((color1.r as f32 + color2.r as f32 )/2.0).round() as u8;
 	let green =  ((color1.g as f32 + color2.g as f32 )/2.0).round() as u8;
 	let blue  =  ((color1.b as f32 + color2.b as f32 )/2.0).round() as u8;
+	Color::new(red, green, blue)
+}
+
+//http://www.iquilezles.org/www/articles/outdoorslighting/outdoorslighting.htm
+//http://stackoverflow.com/questions/16521003/gamma-correction-formula-gamma-or-1-gamma
+//Corrected = 255 * (Image/255)^(1/2.2).
+fn gamma_correction(color:Color)->Color{
+	let gamma = 1.0/2.2;
+	let red = (255.0 * (color.r as f64 / 255.0).powf(gamma)).round() as u8;
+	let green = (255.0 * (color.g as f64 / 255.0).powf(gamma)).round() as u8;
+	let blue = (255.0 * (color.b as f64 / 255.0).powf(gamma)).round() as u8;
 	Color::new(red, green, blue)
 }

@@ -25,7 +25,7 @@ pub struct Binvox{
 
 impl Binvox{
 	
-	pub fn read_file(filename:String)->(LOD, Voxtree<bool>, Voxtree<Normal>){
+	pub fn read_file(filename:String)->(LOD, Voxtree<Normal>){
 		let path = Path::new(&filename);
     	let display = path.display();	
 	    let mut file = match File::open(&path) {
@@ -42,7 +42,7 @@ impl Binvox{
 		let scale = read_scaling(&mut reader);	
 		let size = xlimit * ylimit * zlimit;
 		println!("size: {}", size);
-		let (Voxtree, normals) = read_data(&mut reader, size);
+		let normals = read_data(&mut reader, size);
 		
 		let binvox = Binvox{
 					version: version, 
@@ -53,7 +53,7 @@ impl Binvox{
 		let size = xlimit * ylimit * zlimit;
 		let lod = LOD::from_volume(size);
 		
-		(lod, Voxtree, normals)
+		(lod, normals)
 				
 	}
 
@@ -162,7 +162,7 @@ fn read_scaling(reader:&mut BufRead)->f64{
 	}
 }
 
-fn read_data(reader:&mut BufRead, size:u64)->(Voxtree<bool>, Voxtree<Normal>){
+fn read_data(reader:&mut BufRead, size:u64)->Voxtree<Normal>{
 	
 	let lod = LOD::from_volume(size);
 	let mut buff = String::new();
@@ -205,6 +205,7 @@ fn read_data(reader:&mut BufRead, size:u64)->(Voxtree<bool>, Voxtree<Normal>){
 		let mut root = Voxtree::new();
 		println!("loading binvox....");
 		let mut percentage = 0;
+		let mut cnt = 0;
 		for i in 0..linear_voxels.len(){
 			let new_percentage = ((i as f64 / linear_voxels.len() as f64) * 100.0).round() as u64;
 			if percentage != new_percentage {
@@ -216,13 +217,25 @@ fn read_data(reader:&mut BufRead, size:u64)->(Voxtree<bool>, Voxtree<Normal>){
 				let (x,y,z) = location::index_to_xyz(&lod, i as u64);
 				let loc =  location::from_xyz(&lod, x, y, z);
 				root.set_tree_non_recursive(&loc, &mut Some(true));
+				cnt += 1;
 			}
 		}
+		println!("There are {{{}}}  solid voxels..",cnt);
 		let mut normals = Voxtree::new();
 		if constants::PRECALCULATE_NORMALS{
 			normals = voxelizer::calculate_normals(&root, &lod);
 		}
-		return (root, normals);
+		//let carved = voxelizer::carve_out(&root, &lod);
+		drop(root);
+		let use_smooth_normals = false;
+		let smoothing_iteration = 1;//2 is enough
+		if use_smooth_normals{
+			for i in 0..smoothing_iteration{
+				println!("Pass {}.. ",i);
+				normals = voxelizer::smoothen_normals(&normals, &lod);
+			}
+		}
+		return normals;
 		
 	}
 	else{

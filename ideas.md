@@ -11,3 +11,12 @@ Loading LOD's of object at observer location will be traversed in spherical fash
 Starting from the observer location, expand a sphere outward removing points as necessary when certain points hits a voxel.
 
 voxels that are not completely opaque will have to continue traversing the ray until such threshold of opacity is reached.
+
+##Voxelizing algorithmn
+	* Taking the triangles mesh of a 3D model.
+	* Decide which axis to slice the model from
+	* Determine which triangles that touches the axis at a certain intercept.
+		* Using a AARB box, if a triangle is intersected at this bounding box, then that triangle will be a part of the test.
+http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/tribox3.txt
+	* Determine the points that lie in the triangles.
+	

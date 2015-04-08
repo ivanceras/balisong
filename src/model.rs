@@ -7,7 +7,6 @@ use normal::Normal;
 //an Voxtree when put in a scene
 pub struct Model{
 	pub location:Point,
-	pub voxtree:Voxtree<bool>,
 	pub normal:Voxtree<Normal>,
 	pub scale:f64,
 }
@@ -15,13 +14,13 @@ pub struct Model{
 
 impl Model{
 	
-	pub fn new(location:Point, voxtree:Voxtree<bool>, normal:Voxtree<Normal>, scale:f64)->Model{
-		Model{location:location, voxtree:voxtree, normal:normal, scale:scale}
+	pub fn new(location:Point, normal:Voxtree<Normal>, scale:f64)->Model{
+		Model{location:location, normal:normal, scale:scale}
 	}
 }
 
 impl fmt::Display for Model {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "location: {}, scale:{}, Voxtree: {}", self.location, self.scale, self.voxtree)
+        write!(f, "location: {}, scale:{}, normals: {}", self.location, self.scale, self.normal)
     }
 }

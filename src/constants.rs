@@ -1,5 +1,8 @@
 //or calculate only when point is traced and occupied
-pub static PRECALCULATE_NORMALS:bool = false;
+pub static PRECALCULATE_NORMALS:bool = true;
+pub static USE_GAMMA_CORRECTION:bool = false;
+//neighbor radius for extraction of neighboring voxels
+pub static NEIGHBOR_RADIUS:f64 = 1.0;
 
 //for 64 bits
 pub static BITS:u8 = 64;

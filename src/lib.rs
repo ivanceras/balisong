@@ -20,3 +20,4 @@ pub mod binvox;
 pub mod neighbors;
 pub mod lod;
 pub mod bitset;
+pub mod voxline;

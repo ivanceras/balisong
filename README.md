@@ -1,48 +1,33 @@
 #Balisong
 
-A voxel based renderer written in rust.
+A voxel based raytracer written in rust.
+Well, raycaster for now (no light bounce yet).
 
 
 ##Screenshots
 
-######No Smoothing (Below)
-![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/no_smoothing.png)
+####Here is a golden statue
 
+![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/complex_golden_smoothen.png)
 
-
-######Single Smoothing (Below)
-![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/single_smooth.png)
-
-Note: The purple dots indicated erroneous calculation upon averaging which have resulted to Normal(0, 0, 0)
-
-
-
-
-######Dual smoothing / Final result
-![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/dual_smooth.png)
-
-
-##How to generate the image above
-	
 ```
-git clone https://github.com/ivanceras/balisong
-cd balisong
-cargo run --release --example render_solid_lucy
+cargo run --release --example render_complex10
+
 ```
 
 then look at `./renders` directory. File output is in `.ppm` format which should be viewable in linux
 
-
-![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/complex.png)
-
-```
-cargo run --release --example render_complex
-```
+Rendering took ~400 seconds on Intel Core i7, that is excluding the calculation and smoothing of normals.
 
 
-####Here is a golden statue
+The a voxel grid which is capable of holding (2^10)^3 = 1,073,741,824 voxels.
+Of course, I stripped out the empty voxels and the completely occluded voxels
+The gold color in hardcoded in the raytracer. So, everything will be golden.
 
-![](https://raw.githubusercontent.com/ivanceras/balisong/master/screenshots/complex_golden_smoothen.png)
+Fully solid statue has 26,637,838 voxels (includes the occluded voxels, which is 2% of the total maximum grid space). Consumes a whooping 6.4 GiB of memory
+
+The final carved out statue contains 2,102,146 surface voxels which is 8% of the total solid statue and 0.20% of the maximum space grid space.
+It consumed only 700 MiB of memory which inlcuded the calculated normals for each surface voxel.
 
 
 #Features
@@ -51,13 +36,11 @@ cargo run --release --example render_complex
 * Written in rust :)
 
 
-#Progress made since ivancerust
-* This project is a progression of [ivancerust](https://github.com/ivanceras/ivancerust)
-* Calculation of normals take a few minutes, and a few minutes more for smoothing the normals. This is however not yet optimized, and may improved in future iteration of this project
-* This now uses sparse octree which speed up the searching of points to an average of 3 microsecond per pixel.
-	* Rendering process still takes ~30 seconds, since there are only 8 CPU to parallelize the load of 2 million pixels (1920x1080)
+#Progress
+Daily Progress is logged in [Progress.md](https://github.com/ivanceras/balisong/blob/master/Progress.md)
 
-* Normals are recalculated based on voxel structure, this is useful when you are procedurally generating terrains / models.
+#TODO's
+Daily Todo's is logged in [TODO.md](https://github.com/ivanceras/balisong/blob/master/TODO.md)
 	
 
 #Roadmap

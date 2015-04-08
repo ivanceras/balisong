@@ -6,59 +6,28 @@ use constants;
 use lod::LOD;
 
 
-pub struct Voxtree<T>{
+pub struct EmptyVoxtree{
 	pub bitset:u64,//contains the information of which of sector belongs to 
-	pub content:Option<T>,
-	pub children:Vec<Voxtree<T>>,//leaf only when there is no children content, children.len() == 0,
+	pub children:Vec<EmptyVoxtree>,//leaf only when there is no children content, children.len() == 0,
 }
 
 
-impl <T> Voxtree<T>{
+impl EmptyVoxtree{
 	
-	pub fn new()->Voxtree<T>{
-		Voxtree{bitset:0, content: None, children:Vec::new()}
+	pub fn new()->EmptyVoxtree{
+		EmptyVoxtree{bitset:0, children:Vec::new()}
 	}
 
-	/// 
-	/// Sets the content of the Voxtree at this location
-	/// 
-	pub fn set_tree1(&mut self, location:&Vec<u64>, content:&mut Option<T>){
-		let mut m_location = location.clone();
-		self.set_tree_internal(&mut m_location, content)
-	}
-	
-	
-	///
-	/// Internal implementation for setting the Voxtree
-	///
-	
-	fn set_tree_internal(&mut self, location:&mut Vec<u64>, content:&mut Option<T>){
-		if self.is_empty(location[0]){//if empty, create a node with None content
-			self.set(location[0], &mut None);
-		}
-		let node = self.get_as_mut(location[0]);//here is the node
-		if location.len() > 1 {//this is the last
-			location.remove(0);
-			if location.len() > 0 {
-				node.set_tree_internal(location, content);
-			}
-		}
-		else{//location.len() == 1
-			assert!(location.len() == 1, "This should be the last location");
-			node.set(location[0], content);
-		}
-	}
-	
-	pub fn set_tree_non_recursive(&mut self, location:&Vec<u64>, content:&mut Option<T>){
-		let mut stack:Vec<&mut Voxtree<T>> = Vec::new();
+	pub fn set_tree_non_recursive(&mut self, location:&Vec<u64>){
+		let mut stack:Vec<&mut EmptyVoxtree> = Vec::new();
 		stack.push(self);
 		for i in 0..location.len() {
-			let mut top:&mut Voxtree<T> = match stack.pop(){
+			let mut top:&mut EmptyVoxtree = match stack.pop(){
 				Some(x) => x,
 				None => panic!("Oh no's, stack in empty!"),
 			};
 			if top.is_empty(location[i]){
-				top.set(location[i], &mut None);
+				top.set(location[i]);
 			}
 			let node = top.get_as_mut(location[i]);
 			stack.push(node);
@@ -69,9 +38,9 @@ impl <T> Voxtree<T>{
 		};
 		let last = location.len() - 1;
 		if last_node.is_empty(location[last]){
-			last_node.set(location[last], &mut None);
+			last_node.set(location[last]);
 		}
-		last_node.set(location[last], content);
+		last_node.set(location[last]);
 	}
 	
 
@@ -82,21 +51,16 @@ impl <T> Voxtree<T>{
 	///
 	///
 	/*
-	fn get_tree(&self, location:&Vec<u64>)->&Voxtree<T>{
+	fn get_tree(&self, location:&Vec<u64>)->&EmptyVoxtree{
 		let mut m_location = location.clone();
 		self.get_tree_internal(&mut m_location)
 	}
 	*/
 	
-	pub fn get(&self, location:&Vec<u64>)->&Option<T>{
-		let mut m_location = location.clone();
-		let Voxtree = self.get_tree_internal(&mut m_location);
-		&Voxtree.content
-	}
 	///
-	///internal implementation of getting the Voxtree
+	///internal implementation of getting the EmptyVoxtree
 	///
-	fn get_tree_internal(&self, location:&mut Vec<u64>)->&Voxtree<T>{
+	fn get_tree_internal(&self, location:&mut Vec<u64>)->&EmptyVoxtree{
 		let node = self.get_node(location[0]);
 		if location.len() > 1 {
 			location.remove(0);
@@ -108,12 +72,11 @@ impl <T> Voxtree<T>{
 		}
 	}
 	
-	
 	///A much better implementation of setting
-	pub fn set(&mut self, location:u64, content:&mut Option<T>){
-		self.children.push(Voxtree::new());
+	pub fn set(&mut self, location:u64){
+		//println!("Taking the content to the T in set_ref... for location: {}",location);
+		self.children.push(EmptyVoxtree::new());
 		self.bitset = self.bitset | location;
-		self.content = content.take();
 	}
 	
 	///unsetting bits, there should be a cleanup operation to unset nodes that has 0 value
@@ -126,13 +89,13 @@ impl <T> Voxtree<T>{
 	///
 	/// get the child node located  
 	///
-	fn get_node(&self, location:u64)->&Voxtree<T>{
+	fn get_node(&self, location:u64)->&EmptyVoxtree{
 		if self.is_occupied(location){
 			let index = self.index_of(location);
 			return &self.children[index];
 		}
 		else{
-			panic!("No Voxtree at location: {:8b}",location);
+			panic!("No EmptyVoxtree at location: {:8b}",location);
 		}
 	}
 	
@@ -141,13 +104,13 @@ impl <T> Voxtree<T>{
 	///
 	///
 	
-	pub fn get_as_mut(&mut self, location:u64)->&mut Voxtree<T>{
+	pub fn get_as_mut(&mut self, location:u64)->&mut EmptyVoxtree{
 		if self.is_occupied(location){
 			let index = self.index_of(location);
 			return &mut self.children[index];
 		}
 		else{
-			panic!("No Voxtree at location: {:8b}",location);
+			panic!("No EmptyVoxtree at location: {:8b}",location);
 		}
 	}
 	
@@ -199,7 +162,7 @@ impl <T> Voxtree<T>{
 	/// TODO: create a more simple/optimum algorithm for this
 	///
 	pub fn is_point_occupied(&self, lod:&LOD, x:i64, y:i64 ,z:i64)->bool{
-		if location::is_bounded(lod, x, y, z){ //no more bounds check if the camera is located inside the one-world Voxtree
+		if location::is_bounded(lod, x, y, z){ //no more bounds check if the camera is located inside the one-world EmptyVoxtree
 			let loc = location::from_xyz(lod, x as u64, y as u64, z as u64);
 			return self.is_location_occupied(&loc);
 		}
@@ -240,16 +203,16 @@ impl <T> Voxtree<T>{
 	}
 	
 	///
-	/// return the total number of leaf nodes in the Voxtree
+	/// return the total number of leaf nodes in the EmptyVoxtree
 	//
 	pub fn count_leaf(&self)->u64{
 		self.count_leaf_internal(self)
 	}
 	
 	/// 
-	/// internal implementation of counting the leaf nodes in the Voxtree
+	/// internal implementation of counting the leaf nodes in the EmptyVoxtree
 	/// 
-	fn count_leaf_internal(&self, node:&Voxtree<T>)->u64{
+	fn count_leaf_internal(&self, node:&EmptyVoxtree)->u64{
 		let mut count = 0;
 		if node.is_leaf(){
 			count += 1;
@@ -271,7 +234,7 @@ impl <T> Voxtree<T>{
 	///
 	/// internal implementation for counting the total number of nodes
 	///
-	fn count_nodes_internal(&self, node:&Voxtree<T>)->u64{
+	fn count_nodes_internal(&self, node:&EmptyVoxtree)->u64{
 		//let mut count = location::count_bits(node.bitset) as u64;
 		let mut count = node.children.len() as u64;
 		for i in 0..node.children.len(){
@@ -301,7 +264,7 @@ impl <T> Voxtree<T>{
 }
 
 
-impl <T: fmt::Display> fmt::Display for Voxtree<T> {
+impl fmt::Display for EmptyVoxtree {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "(bitset: {:8b}), children: {}",self.bitset, self.children.len())
     }

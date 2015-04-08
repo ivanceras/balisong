@@ -27,3 +27,11 @@
 * Renamed octree to voxtree since the number of children is not limited to 8 anymore, 64 children is optimal option for optimizing memory usage.
 * Added blending of colors and light intensity.
 * Tried recalculating of normals only when the point is hit in the computation of rays
+
+##April 6, 2015
+* Eliminated error calculation in normals which resulted in Normal(0,0,0) by substituting it with normals dervied from the center of the object
+
+##April 8, 2015
+* Reduced memory size from 6.4 GB(fully solid) to 5.3 GB(fully solid, ommited booleans) to 900 MB(carved out) to 713 MB(carved out normals only) by carving out completely occluded voxels. Using empty voxtree saves up to 1.1GB of unrequired contents
+	* Fully solid (6.4 GB) - 26,637,838 solid voxels, occluded included  (2 % of the maximum space)
+	* Carved out (720 MB)  - 2,102,146 surface voxels (8% of the total solid) (0.20 % of the maximum space)

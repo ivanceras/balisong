@@ -46,7 +46,7 @@
 	
 ## March 23, 2015
     * Create normals based on voxel formation
-        * Each voxel has 6 face neighbors, 12 side neighbors and 8 edge neighbors, at total of 26 neighbors. Calculated as (3^3-1)
+        * Each voxel has 6 face neighbors, 12 edge neighbors and 8 vertex neighbors, at total of 26 neighbors. Calculated as (3^3-1)
         * Getting the neighboring voxel at 0,0,0
 
             ================
@@ -61,7 +61,7 @@
               
              
             ================
-             8 edges         
+             8 vertex neighbors         
             ================        	
             -1 -1 -1 
             -1 -1  1
@@ -73,7 +73,7 @@
              1  1  1 
              
              ================
-             12 side neighbors       
+             12 edge neighbors       
              ================   
              
              0  1  1
@@ -123,3 +123,9 @@
 ##April 5, 2015
     * Fast counting of bitsets
     * http://stackoverflow.com/questions/109023/how-to-count-the-number-of-set-bits-in-a-32-bit-integer	
+    
+##April 6, 2015
+	* Make an implementation to convert obj to voxel format
+		* Use https://github.com/PistonDevelopers/wavefront_obj
+		* and http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/tribox3.txt
+	* This is necessary to extract material(specular maps), color, even normals
