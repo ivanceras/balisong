@@ -54,7 +54,9 @@ pub fn calculate_normals(node:&Voxtree<bool>, lod:&LOD)->Voxtree<Normal>{
 			for z in 0..limit{
 				let point = Point::new(x as i64, y as i64, z as i64);
 				let loc =  location::from_xyz(lod, x, y, z);
-				if node.is_location_occupied(&loc) && !neighbors::is_occluded(node, lod, &point){
+				//let (iteration, hit) = node.is_location_occupied(&loc);
+				let (iteration, hit) = node.is_location_occupied_non_recursive(&loc);
+				if  hit && !neighbors::is_occluded(node, lod, &point){
 					let normal = calculate_point_normal(node, lod, &point);
 					normals.set_tree_non_recursive(&loc, &mut Some(normal));
 					cnt += 1;
@@ -62,7 +64,7 @@ pub fn calculate_normals(node:&Voxtree<bool>, lod:&LOD)->Voxtree<Normal>{
 			}
 		}
 	}
-	println!("There are {} total voxels..",cnt);
+	println!("There are {} total voxels after carving..",cnt);
 	normals
 }
 
@@ -202,7 +204,9 @@ pub fn smoothen_normals(initial_normals:&Voxtree<Normal>, lod:&LOD)->Voxtree<Nor
 			for z in 0..limit{
 				let point = Point::new(x as i64, y as i64, z as i64);
 				let loc =  location::from_xyz(lod, x, y, z);
-				if initial_normals.is_location_occupied(&loc) && !neighbors::is_occluded(&initial_normals, lod, &point){
+				//let (iteration, hit) = initial_normals.is_location_occupied(&loc);
+				let (iteration, hit) = initial_normals.is_location_occupied_non_recursive(&loc);
+				if hit && !neighbors::is_occluded(&initial_normals, lod, &point){
 					let normal = get_average_normal(&initial_normals, lod, &point);
 					normals.set_tree_non_recursive(&loc, &mut Some(normal));
 				}
@@ -243,7 +247,9 @@ pub fn carve_out(node:&Voxtree<bool>, lod:&LOD)->Voxtree<bool>{
 			for z in 0..limit{
 				let point = Point::new(x as i64, y as i64, z as i64);
 				let loc =  location::from_xyz(lod, x, y, z);
-				if node.is_location_occupied(&loc) && !neighbors::is_occluded(node, lod, &point){
+				//let (iteration, hit) = node.is_location_occupied(&loc);
+				let (iteration, hit) = node.is_location_occupied_non_recursive(&loc);
+				if hit && !neighbors::is_occluded(node, lod, &point){
 					carved.set_tree_non_recursive(&loc, &mut Some(true));
 				}
 			}

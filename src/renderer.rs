@@ -140,9 +140,11 @@ pub fn trace_pixel(lod:&LOD, view_lod:&LOD, model:&Model, screen:&Screen, camera
 	let pixel_vector = pixel_vector.rotate_at_y(camera.roll);
 	let pixel_vector = pixel_vector.rotate_at_x(camera.pitch);
 	let pixel_vector = pixel_vector.rotate_at_z(camera.yaw);
-	let pixel_ray = Ray::new(&camera.eye, pixel_vector);
+	let pixel_ray = Ray::new(&camera.eye, &pixel_vector);
 	//let color = raytracer::trace_ray(screen, lod, view_lod, pixel_ray, model, model.scale, max_distance);
-	let color = raytracer::trace_ray_normals(screen, lod, view_lod, pixel_ray, model, model.scale, max_distance);
+	//let color = raytracer::trace_ray_normals(screen, lod, view_lod, pixel_ray, model, model.scale, max_distance);
+	//let color = raytracer::adaptive_trace_ray_normals(screen, lod, view_lod, &pixel_ray, model, model.scale, max_distance);
+	let color = raytracer::factored_trace_ray_normals(screen, lod, view_lod, pixel_ray, model, model.scale, max_distance);
 	color
 }
 

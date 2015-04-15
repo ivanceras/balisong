@@ -29,6 +29,9 @@ pub fn from_xyz(lod:&LOD, x:u64, y:u64, z:u64)->Vec<u64>{
 
 pub fn next(lod:&LOD, loc:&Vec<u64>, dir:&Vector)->Vec<u64>{
 	Vec::new()
+	//simplest algorithmn: 
+	//convert the to xyz component, then add ray direction * length
+	//convert back to loc
 }
 
 /*
@@ -62,7 +65,7 @@ pub fn is_bounded(lod:&LOD, x:i64, y:i64, z:i64)->bool{
 
 
 //from location notation convert to eulidean xyz coordinate
-pub fn to_xyz(location:&Vec<u8>)->(u64, u64, u64){
+pub fn to_xyz(location:&Vec<u64>)->(u64, u64, u64){
 	let mut index = 0u64;
 	let lod = LOD::new(location.len() as u8);
 	for i in 0..location.len(){
@@ -72,7 +75,8 @@ pub fn to_xyz(location:&Vec<u8>)->(u64, u64, u64){
 	index_to_xyz(&lod, index)
 }
 
-fn which_bit(byte:u8)->u8{
+///TODO: this can be replaced with the lowestBit algorithm
+fn which_bit(byte:u64)->u8{
 	(byte as f64).log(constants::BASE as f64) as u8
 }
 
@@ -130,9 +134,9 @@ pub fn count_bits(arg:u8)->u8 {
     count
 }
 
-pub fn display(location:&Vec<u8>){
+pub fn display(location:&Vec<u64>){
 	for i in 0..location.len(){
-		println!("location[{}]: {:8b}",i,location[i]);
+		println!("location[{}]: {:64b}",i,location[i]);
 	}
 }
 

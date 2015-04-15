@@ -17,112 +17,63 @@ use lod::LOD;
 use voxelizer;
 use constants;
 
-//TODO: use adaptive view_lod 
-//that is: when the ray is getting longer, the view_lod will be lesser
-pub fn trace_ray(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:Ray, model:&Model, obj_scale:f64, max_distance:u64 )->Color{
-	//let view_scale = (1 << (view_lod - lod)) as f64;//only applicable when view_lod > lod
-	let limit = lod.limit as i64;
-	let view_limit = view_lod.limit as u64;
-	let view_scale = view_limit as f64 / limit as f64;
+
+pub fn factored_trace_ray_normals(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:Ray, model:&Model, obj_scale:f64, max_distance:u64 )->Color{
+	let view_limit = view_lod.limit as i64;
+	let light = Vector::new(-view_limit as f64 * 2.0, -view_limit as f64 * 2.0, view_limit as f64 * 2.0);
+	let hit_loc = hit_location(screen, lod, view_lod, ray, model, obj_scale, max_distance);
 	
-	let mut length = 0.0;
-	while length < max_distance as f64{
-		let photon = ray.at_length(length);
-		let model_loc = Vector::new(model.location.x as f64, model.location.y as f64, model.location.z as f64);
-		let photon_rel = model_loc.subtract(&photon);
-		let photon_scale = photon_rel.scale(obj_scale/view_scale).as_point();
-		if location::is_bounded(lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
-			let vec_location = location::from_xyz(lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
-			let hit = model.normal.is_location_occupied(&vec_location);
+	if hit_loc.is_some(){
+		let hit_loc = hit_loc.unwrap();
+		let normal = model.normal.get(&hit_loc).clone().unwrap();
+		let normal_vec = normal.unit_vector();
 		
-			if hit {
-				return Color::new(
-					(255 - (255 * photon_scale.x/limit)) as u8, 
-					(255 - (255 * photon_scale.y/limit)) as u8, 
-					(255 - (255 * photon_scale.z/limit)) as u8);
-			}
-		}
-		length += 1.0;
+		let (x,y,z) = location::to_xyz(&hit_loc);
+		let photon = Vector::new(x as f64,y as f64,z as f64);
+		
+		let light_vec = light.subtract(&photon).unit_vector();
+		let intensity = normal_vec.dot(&light_vec);
+		
+		let object_color = Color::new( (255.0/2.0 * (intensity + 1.0)).round() as u8, 
+							(233.0/2.0 * (intensity + 1.0)).round() as u8, 
+							(0.0/2.0 * (intensity + 1.0)).round() as u8);
+		
+		let color = Color::new( (127.0 * (intensity + 1.0)).round() as u8, 
+										(127.0 * (intensity + 1.0)).round() as u8, 
+										(127.0 * (intensity + 1.0)).round() as u8);
+		
+		let fcolor = blend(object_color, color);
+		return fcolor;
 	}
-	Color::white()
+	else{
+		return Color::white();
+	}
+	
 }
 
-
-///
-///
-/// Using normal to calculate the intensity of light at such point
-///
-///
-pub fn trace_ray_normals(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:Ray, model:&Model, obj_scale:f64, max_distance:u64 )->Color{
-	
-	let use_normal = true;//use normal or color
+pub fn hit_location(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:Ray, model:&Model, obj_scale:f64, max_distance:u64)->Option<Vec<u64>>{
 	
 	let limit = lod.limit as i64;
 	let view_limit = view_lod.limit as i64;
-	let view_scale = view_limit as f64 / limit as f64;
-	
-	//sun light
-	//let light = Vector::new(view_limit as f64/4.0, view_limit as f64/2.0, view_limit as f64);
-	//let light = Vector::new(-view_limit as f64, -view_limit as f64, -view_limit as f64/4.0);
-	let light = Vector::new(-view_limit as f64 * 2.0, -view_limit as f64 * 2.0, view_limit as f64 * 2.0);
-	
+	let scale = obj_scale * limit as f64/view_limit as f64; //scale of object to LOD to view lod
 	let mut length = 0.0;
 	while length < max_distance as f64{
 		let photon = ray.at_length(length);
 		let model_loc = Vector::new(model.location.x as f64, model.location.y as f64, model.location.z as f64);
 		let photon_rel = model_loc.subtract(&photon);
-		let photon_scale = photon_rel.scale(obj_scale/view_scale).as_point();
+		let photon_scale = photon_rel.scale(scale).as_point();
 		if location::is_bounded(lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
-			//let hit = model.octree.is_location_occupied(&vec_location);
-			let hit = model.normal.is_point_occupied(lod, photon_scale.x, photon_scale.y, photon_scale.z);
+			let vec_location = location::from_xyz(lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
+			//let (iteration, hit) = model.normal.is_location_occupied(&vec_location);
+			let (iteration, hit) = model.normal.is_location_occupied_non_recursive(&vec_location);
 			if hit {
-				
-				if use_normal{
-					let vec_location = location::from_xyz(lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
-					
-					//Normal is only calculated when it hits the point
-					let normal = if constants::PRECALCULATE_NORMALS{
-						model.normal.get(&vec_location).clone().unwrap()
-					}else{voxelizer::calculate_point_normal(&model.normal, lod, &photon_scale)};
-					
-					let normal_vec = normal.unit_vector();
-					if normal.x == 0 && normal.y == 0 && normal.z == 0{
-						//println!("This normal is erroneous...");
-						return Color::purple();
-					}
-					let light_vec = light.subtract(&photon).unit_vector();
-					let intensity = normal_vec.dot(&light_vec);
-					let color = Color::new( (127.0 * (intensity + 1.0)).round() as u8, 
-											(127.0 * (intensity + 1.0)).round() as u8, 
-											(127.0 * (intensity + 1.0)).round() as u8);
-					//metallic gold
-					//let object_color = Color::new( (212.0/2.0 * (intensity + 1.0)).round() as u8, 
-					//						(172.0/2.0 * (intensity + 1.0)).round() as u8, 
-					//						(55.0/2.0 * (intensity + 1.0)).round() as u8);
-					
-					//golden yellow
-					let object_color = Color::new( (255.0/2.0 * (intensity + 1.0)).round() as u8, 
-											(233.0/2.0 * (intensity + 1.0)).round() as u8, 
-											(0.0/2.0 * (intensity + 1.0)).round() as u8);
-					let fcolor = blend(object_color, color);
-					if constants::USE_GAMMA_CORRECTION{
-						return gamma_correction(fcolor);
-					}
-					else{
-						return fcolor;
-					}
-				}
-				else{
-					return Color::new(
-						(255 - (255 * photon_scale.x/limit)) as u8, 
-						(255 - (255 * photon_scale.y/limit)) as u8, 
-						(255 - (255 * photon_scale.z/limit)) as u8);
-				}
+				//println!("hit at iteration: {}", iteration);
+				return Some(vec_location);
 			}
 		}
 		length += 1.0;
 	}
-	Color::white()
+	None
 }
 
 //blending the normal color with model color
@@ -143,3 +94,4 @@ fn gamma_correction(color:Color)->Color{
 	let blue = (255.0 * (color.b as f64 / 255.0).powf(gamma)).round() as u8;
 	Color::new(red, green, blue)
 }
+

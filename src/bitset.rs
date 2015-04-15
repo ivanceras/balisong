@@ -37,7 +37,9 @@ pub fn index_of(bitset:u64, location:u64)->usize{
 	return index;
 }
 
+/// TODO:: optimization needed 
 /// http://bits.stephan-brumme.com/lowestBitSet.html
+/// http://chessprogramming.wikispaces.com/BitScan
 pub fn lowest_bitset(x:u64)->usize{
 	let mut x = x;
 	if x == 0{

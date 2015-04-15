@@ -65,7 +65,7 @@ fn main() {
 	let duration = start.to(PreciseTime::now());
 	println!("Rendering took: {} seconds", duration.num_seconds());
 	
-	let filename = format!("./renders/ktm{}_{}_{}_{}[{}_{}_{}].ppm",
+	let filename = format!("./renders/ktm_side{}_{}_{}_{}[{}_{}_{}].ppm",
 		lod, view_lod, obj_scale, cam_loc, 
 		pitch.to_degrees().round(), yaw.to_degrees().round(), roll.to_degrees().round());
 	

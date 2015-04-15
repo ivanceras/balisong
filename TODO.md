@@ -129,3 +129,49 @@
 		* Use https://github.com/PistonDevelopers/wavefront_obj
 		* and http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/tribox3.txt
 	* This is necessary to extract material(specular maps), color, even normals
+
+	
+##April 8, 2015
+	*Rewrite the loops to use iterator rather than accessing via index (http://doc.rust-lang.org/book/iterators.html).
+		* Accessing via index has extra bounds check thus a performance penalty which unlike iterator bounds check is not needed.
+
+##April 10, 2015
+	* There are around 4000 delta length ray marched until an object is hit
+	* Reduce the number of delta point computation by making a low LOD traversal when no object is found. LOD is increased when a point might have hit.
+	* Alogrithm: start from highest LOD, if no hit, increment direction length++, if hit LOD++ until no hit or hit && LOD == required LOD 
+	
+	fn hit(ray, LOD, node){
+		let current_lod = 1;
+		let length = 0;
+		let photon = ray.at_length(length);
+		loop {
+			let location = location::from_xyz(current_lod, photon.x, photon.y, photon.z);
+			let hit = node.is_location_occupied(&location);
+			if hit{
+				current_lod+=1;
+				if current_lod == required_lod{
+					break;
+					//return location;
+				}
+			}
+			else{
+				//location.remove(last);
+				length+=1;//a length should be moving from 1 voxel to next
+				if length > max_distance{
+					break;
+					//return None;
+				}
+			}
+		}
+	}
+	
+	
+	* Decreasing the LOD is just simple as ommiting the last element of the location.
+	* Then determine the next element of the location with a direction 
+
+##April 11,2015
+	* Stucked with optimizing the LOD traversal
+	* Another attempt:
+		* make a ray box intersection to fast remove rays that has no hope of hitting the box
+		* for all the other rays that may hit the box, do an adaptive LOD search
+			* Starting at a point of increment with 1 voxel distance at higher LOD. 	 

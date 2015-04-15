@@ -202,36 +202,37 @@ fn read_data(reader:&mut BufRead, size:u64)->Voxtree<Normal>{
 		}
 		
 		println!("There are {} voxels",linear_voxels.len());
+		let mut cnt = 0;
 		let mut root = Voxtree::new();
 		println!("loading binvox....");
 		let mut percentage = 0;
-		let mut cnt = 0;
-		for i in 0..linear_voxels.len(){
-			let new_percentage = ((i as f64 / linear_voxels.len() as f64) * 100.0).round() as u64;
+		let mut index = 0;
+		//for j in 0..linear_voxels.len(){
+		for value in &linear_voxels{
+			let new_percentage = ((index as f64 / linear_voxels.len() as f64) * 100.0).round() as u64;
 			if percentage != new_percentage {
 				println!("{}%",new_percentage);
 			}
 			percentage = new_percentage;
-			let value = linear_voxels[i];
-			if value > 0 {//no carving
-				let (x,y,z) = location::index_to_xyz(&lod, i as u64);
+			//let value = linear_voxels[j];
+			if *value > 0 {//no carving
+				let (x,y,z) = location::index_to_xyz(&lod, index as u64);
 				let loc =  location::from_xyz(&lod, x, y, z);
 				root.set_tree_non_recursive(&loc, &mut Some(true));
 				cnt += 1;
 			}
+			index += 1;
 		}
 		println!("There are {{{}}}  solid voxels..",cnt);
 		let mut normals = Voxtree::new();
 		if constants::PRECALCULATE_NORMALS{
 			normals = voxelizer::calculate_normals(&root, &lod);
 		}
-		//let carved = voxelizer::carve_out(&root, &lod);
 		drop(root);
-		let use_smooth_normals = true;
 		let smoothing_iteration = 1;//2 is enough
-		if use_smooth_normals{
-			for i in 0..smoothing_iteration{
-				println!("Pass {}.. ",i);
+		if constants::SMOOTHEN_NORMALS{
+			for k in 0..smoothing_iteration{
+				println!("Pass {}.. ",k);
 				normals = voxelizer::smoothen_normals(&normals, &lod);
 			}
 		}

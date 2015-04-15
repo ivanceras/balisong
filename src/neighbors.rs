@@ -14,8 +14,13 @@ pub  fn  get_neighbors<T> (node:&Voxtree<T>, lod:&LOD, point:&Point, neighbors_d
 		let neighbor_scaled = neighbors_dir[i].scale(constants::NEIGHBOR_RADIUS);
 		let new_vec_loc = vec_loc.add(&neighbor_scaled);
 		let vec_point = new_vec_loc.as_point();
-		if node.is_point_occupied(lod, vec_point.x, vec_point.y, vec_point.z){
-			neighbors_loc.push(vec_point);
+		if location::is_bounded(lod, vec_point.x, vec_point.y, vec_point.z){
+			let loc = location::from_xyz(lod, vec_point.x as u64, vec_point.y as u64, vec_point.z as u64);
+			//let (iteration, hit) = node.is_location_occupied(&loc);
+			let (iteration, hit) = node.is_location_occupied_non_recursive(&loc);
+			if hit{
+				neighbors_loc.push(vec_point);
+			}
 		}
 	}
 	neighbors_loc
@@ -29,8 +34,13 @@ pub  fn  get_non_occluded_neighbors<T> (node:&Voxtree<T>, lod:&LOD, point:&Point
 		let neighbor_scaled = neighbors_dir[i].scale(constants::NEIGHBOR_RADIUS);
 		let new_vec_loc = vec_loc.add(&neighbor_scaled);
 		let vec_point = new_vec_loc.as_point();
-		if !is_occluded(node, lod, &vec_point) && node.is_point_occupied(lod, vec_point.x, vec_point.y, vec_point.z){
-			neighbors_loc.push(vec_point);
+		if location::is_bounded(lod, vec_point.x, vec_point.y, vec_point.z){
+			let loc = location::from_xyz(lod, vec_point.x as u64, vec_point.y as u64, vec_point.z as u64);
+			//let (iteration, hit) = node.is_location_occupied(&loc);
+			let (iteration, hit) = node.is_location_occupied_non_recursive(&loc);
+			if !is_occluded(node, lod, &vec_point) && hit{
+				neighbors_loc.push(vec_point);
+			}
 		}
 	}
 	neighbors_loc
@@ -44,8 +54,13 @@ pub  fn  get_empty_neighbors<T> (node:&Voxtree<T>, lod:&LOD, point:&Point, neigh
 		let neighbor_scaled = neighbors_dir[i].scale(constants::NEIGHBOR_RADIUS);
 		let new_vec_loc = vec_loc.add(&neighbor_scaled);
 		let vec_point = new_vec_loc.as_point();
-		if !node.is_point_occupied(lod, vec_point.x, vec_point.y, vec_point.z){
-			neighbors_loc.push(vec_point);
+		if location::is_bounded(lod, vec_point.x, vec_point.y, vec_point.z){
+			let loc = location::from_xyz(lod, vec_point.x as u64, vec_point.y as u64, vec_point.z as u64);
+			//let (iteration, hit) = node.is_location_occupied(&loc);
+			let (iteration, hit) = node.is_location_occupied_non_recursive(&loc);
+			if !hit{
+				neighbors_loc.push(vec_point);
+			}
 		}
 	}
 	neighbors_loc

@@ -17,11 +17,21 @@ impl LOD{
 		if lod > constants::MAX_LOD{
 			panic!("LOD can not be greater than {}", constants::MAX_LOD);
 		}
-		let base = constants::BASE;
-		let limit = (base as f64).powf(lod as f64) as u32;
-		println!("limit: {}", limit);
+		let base = constants::BASE as u32;
+		let limit = base.pow(lod as u32);
 		let volume =  limit as u64 * limit as u64 * limit as u64;
 		LOD{lod:lod, limit:limit, volume:volume}
+	}
+	
+	pub fn inc(&mut self, inc:u8){
+		let lod = self.lod + inc;
+		let base = constants::BASE as u32;
+		let limit = base.pow(lod as u32);
+		println!("limit: {}", limit);
+		let volume =  limit as u64 * limit as u64 * limit as u64;
+		self.lod = lod;
+		self.limit = limit;
+		self.volume = volume;
 	}
 	
 	pub fn from_volume(volume:u64)->LOD{

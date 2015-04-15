@@ -6,7 +6,6 @@ use shape::{Shape, Sphere};
 use normal::Normal;
 use std::option::Option;
 use color::Color;
-use std::num::Float;
 use screen::Screen;
 use camera::Camera;
 use time::PreciseTime;
@@ -55,25 +54,15 @@ fn main() {
 	println!("Voxelizing took: {} seconds",duration.num_seconds());
 	let voxel_grid_size = limit * limit * limit;
 	println!("voxel grid size: {}", voxel_grid_size);
-	let total_nodes = normals.count_nodes();
-	println!("There are {} total nodes", total_nodes);
-	let empty = voxel_grid_size as i64 - total_nodes as i64;
-	println!("empty: {} {}%", empty, (100.0 * empty as f64/voxel_grid_size as f64).round());
-	println!("filled {} %", (100.0 * total_nodes as f64 / voxel_grid_size as f64).round());
-	let leaf_nodes = normals.count_leaf();
-	println!("There are {} leaf nodes {}%", leaf_nodes, (100.0 * leaf_nodes as f64 / total_nodes as f64).round());
 	
 	let view_limit = view_lod.limit as i64;
 	let obj_scale = 1.0;
 	
 	//let cam_loc = Point::new(view_limit/2, -view_limit/2, view_limit/2);
 	let cam_loc = Point::new(0, -view_limit, 0);
-	//let pitch = (0.0).to_radians();
-	//let yaw = (0.0).to_radians();
-	//let roll = (0.0).to_radians();
-	let pitch = 0.0;
-	let yaw = 0.0;
-	let roll = 0.0;
+	let pitch = (0.0f64).to_radians();
+	let yaw = (0.0f64).to_radians();
+	let roll = (0.0f64).to_radians();
 	let camera = Camera::new(cam_loc.clone(), pitch, yaw, roll);
 	
 	let start = PreciseTime::now();
