@@ -64,11 +64,12 @@ pub fn hit_location(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:Ray, model:&Mod
 		let photon_scale = photon_rel.scale(scale).as_point();
 		if location::is_bounded(lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
 			let vec_location = location::from_xyz(lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
-			//let (iteration, hit) = model.normal.is_location_occupied(&vec_location);
-			let (iteration, hit) = model.normal.is_location_occupied_non_recursive(&vec_location);
+			let (iteration, hit) = model.normal.is_location_occupied_iterative(&vec_location);
 			if hit {
-				//println!("hit at iteration: {}", iteration);
 				return Some(vec_location);
+			}
+			else{
+				//println!("no hit at iteration: {}", iteration);
 			}
 		}
 		length += 1.0;

@@ -38,14 +38,6 @@ fn main() {
 	let duration = start.to(PreciseTime::now());
 
 	let voxel_grid_size = limit * limit * limit;
-	let total_nodes = normals.count_nodes();
-	println!("There are {} total nodes", total_nodes);
-	let empty = voxel_grid_size - total_nodes as i64;
-	println!("empty: {} {}%", empty, (100.0 * empty as f64/voxel_grid_size as f64).round());
-	println!("filled {} %", (100.0 * total_nodes as f64 / voxel_grid_size as f64).round());
-	let leaf_nodes = normals.count_leaf();
-	println!("There are {} leaf nodes {}%", leaf_nodes, (100.0 * leaf_nodes as f64 / total_nodes as f64).round());
-	
 	
 	
 	let view_limit = view_lod.limit as i64;

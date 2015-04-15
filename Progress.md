@@ -39,4 +39,7 @@
 	
 	*KTM - 10,275,626 solid voxels, carved 1,681,220 voxels  - leafnodes: 3,362,440, it is 2 * carved. Need to eliminate putting a children voxel on the leaf nodes
 * Created a 2 separate implementation for setting the path and setting the leaf
+
+##April 14, 2015
+*Made non-recursive funtions in voxtree, this is for easily creating a version for OpenCL.
 	

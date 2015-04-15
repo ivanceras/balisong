@@ -16,7 +16,7 @@ impl <T> Voxtree<T>{
 		Voxtree{bitset:0, content: None, children:Vec::new()}
 	}
 
-	pub fn set_tree_non_recursive(&mut self, location:&Vec<u64>, content:&mut Option<T>){
+	pub fn set_tree_iterative(&mut self, location:&Vec<u64>, content:&mut Option<T>){
 		let mut stack:Vec<&mut Voxtree<T>> = Vec::new();
 		stack.push(self);
 		for i in 0..location.len() {
@@ -46,11 +46,11 @@ impl <T> Voxtree<T>{
 	///
 	
 	pub fn get(&self, location:&Vec<u64>)->&Option<T>{
-		let voxtree = self.get_tree_non_recursive(location);
+		let voxtree = self.get_tree_iterative(location);
 		&voxtree.content
 	}
 	
-	pub fn get_tree_non_recursive(&self, location:&Vec<u64>)->&Voxtree<T>{
+	pub fn get_tree_iterative(&self, location:&Vec<u64>)->&Voxtree<T>{
 		let mut stack:Vec<&Voxtree<T>> = Vec::new();
 		stack.push(self);
 		let last = location.len() - 1;
@@ -96,6 +96,8 @@ impl <T> Voxtree<T>{
 	fn get_node(&self, location:u64)->&Voxtree<T>{
 		if self.is_occupied(location){
 			let index = self.index_of(location);
+			let fast_index = self.fast_index_of(location);
+			assert!(index == fast_index, "fast index should yield the same");
 			return &self.children[index];
 		}
 		else{
@@ -111,6 +113,8 @@ impl <T> Voxtree<T>{
 	pub fn get_as_mut(&mut self, location:u64)->&mut Voxtree<T>{
 		if self.is_occupied(location){
 			let index = self.index_of(location);
+			let fast_index = self.fast_index_of(location);
+			assert!(index == fast_index, "fast index should yield the same");
 			return &mut self.children[index];
 		}
 		else{
@@ -132,19 +136,11 @@ impl <T> Voxtree<T>{
 		!self.is_occupied(location)// or self.bitset == 0
 	}
 	
-	///
-	///it is a leaf when there is no children
-	///
-	///
-	
-	fn is_leaf(&self)->bool{
-		self.children.len() == 0
-	}
 	
 	///
 	/// get the actual index of the child from the vector base on bitset value, 
 	/// by which the actual vector array is sparsed
-	///
+	/// logic: count the number of 1's of bitset before the first and only 1 in location
 	fn index_of(&self, location:u64)->usize{
 		let mut index = 0;
 		for i in 0..constants::BITS{
@@ -158,40 +154,15 @@ impl <T> Voxtree<T>{
 		}
 		return index;
 	}
-///
-	/// check whether the a certain location is occupied or not, expressed in 
-	/// location notation which is just an arrray of 8bit values which describes the location of the 
-	/// voxel at each LOD (level of detail )
-	///
-	pub fn is_location_occupied1(&self, location:&Vec<u64>)->(usize, bool){
-		let mut m_location = location.clone();
-		self.is_location_occupied_recursive(&mut m_location)
+	///short method
+	/// 
+	fn fast_index_of(&self, location:u64)->usize{
+		let location = location - 1;
+		let ones = self.bitset & location;
+		ones.count_ones() as usize
 	}
 	
-	///
-	/// private implementation, since location is mutated at each recursive pass, check whether the a certain location is occupied or not, expressed in 
-	/// location notation which is just an arrray of 8bit values which describes the location of the 
-	/// voxel at each LOD (level of detail )
-	///
-	fn is_location_occupied_recursive(&self, location:&mut Vec<u64>)->(usize, bool){
-		if self.is_empty(location[0]){
-			return (0, false);
-		}
-		else{
-			let node = self.get_node(location[0]);
-			if location.len() > 1 {
-				location.remove(0);
-				return node.is_location_occupied_recursive(location);
-			}
-			else{// location.len() == 1
-				assert!(location.len() == 1, "This should be the last location array");
-				return (0, node.is_occupied(location[0]));
-			}
-			panic!("Shouldn't reach here!");
-		}
-	}
-
-	pub fn is_location_occupied_non_recursive(&self, location:&Vec<u64>)->(usize, bool){
+	pub fn is_location_occupied_iterative(&self, location:&Vec<u64>)->(usize, bool){
 		let mut stack = Vec::new();
 		stack.push(self);
 		let last = location.len() - 1;

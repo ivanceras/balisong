@@ -218,7 +218,7 @@ fn read_data(reader:&mut BufRead, size:u64)->Voxtree<Normal>{
 			if *value > 0 {//no carving
 				let (x,y,z) = location::index_to_xyz(&lod, index as u64);
 				let loc =  location::from_xyz(&lod, x, y, z);
-				root.set_tree_non_recursive(&loc, &mut Some(true));
+				root.set_tree_iterative(&loc, &mut Some(true));
 				cnt += 1;
 			}
 			index += 1;

@@ -1,5 +1,3 @@
-use std::num::Float;
-
 use neighbors;
 use shape::Shape;
 use voxtree::Voxtree;
@@ -26,7 +24,7 @@ pub fn voxelize<T:Shape> (required_lod:&LOD, shape:T)->(Voxtree<Normal>){
 			for z in 0..limit{
 				if shape.is_inside(x as i64, y as i64, z as i64){
 					let loc =  location::from_xyz(required_lod, x, y, z);
-					root.set_tree_non_recursive(&loc, &mut Some(true));//move voxel and location to the Voxtree
+					root.set_tree_iterative(&loc, &mut Some(true));//move voxel and location to the Voxtree
 				}
 			}
 		}
@@ -54,11 +52,10 @@ pub fn calculate_normals(node:&Voxtree<bool>, lod:&LOD)->Voxtree<Normal>{
 			for z in 0..limit{
 				let point = Point::new(x as i64, y as i64, z as i64);
 				let loc =  location::from_xyz(lod, x, y, z);
-				//let (iteration, hit) = node.is_location_occupied(&loc);
-				let (iteration, hit) = node.is_location_occupied_non_recursive(&loc);
+				let (iteration, hit) = node.is_location_occupied_iterative(&loc);
 				if  hit && !neighbors::is_occluded(node, lod, &point){
 					let normal = calculate_point_normal(node, lod, &point);
-					normals.set_tree_non_recursive(&loc, &mut Some(normal));
+					normals.set_tree_iterative(&loc, &mut Some(normal));
 					cnt += 1;
 				}
 			}
@@ -205,14 +202,24 @@ pub fn smoothen_normals(initial_normals:&Voxtree<Normal>, lod:&LOD)->Voxtree<Nor
 				let point = Point::new(x as i64, y as i64, z as i64);
 				let loc =  location::from_xyz(lod, x, y, z);
 				//let (iteration, hit) = initial_normals.is_location_occupied(&loc);
-				let (iteration, hit) = initial_normals.is_location_occupied_non_recursive(&loc);
+				let (iteration, hit) = initial_normals.is_location_occupied_iterative(&loc);
 				if hit && !neighbors::is_occluded(&initial_normals, lod, &point){
 					let normal = get_average_normal(&initial_normals, lod, &point);
-					normals.set_tree_non_recursive(&loc, &mut Some(normal));
+					normals.set_tree_iterative(&loc, &mut Some(normal));
 				}
 			}
 		}
 	}
+	normals
+}
+
+///
+///Create a mipmap normals for the lower level LOD's based on the highest LOD
+/// This is done by traversing from the highest LOD then setting the average normals
+///
+///
+pub fn mipmap_voxel_normals(normals:&Voxtree<Normal>)->Voxtree<Normal>{
+	let mut normals = Voxtree::new();
 	normals
 }
 
@@ -248,9 +255,9 @@ pub fn carve_out(node:&Voxtree<bool>, lod:&LOD)->Voxtree<bool>{
 				let point = Point::new(x as i64, y as i64, z as i64);
 				let loc =  location::from_xyz(lod, x, y, z);
 				//let (iteration, hit) = node.is_location_occupied(&loc);
-				let (iteration, hit) = node.is_location_occupied_non_recursive(&loc);
+				let (iteration, hit) = node.is_location_occupied_iterative(&loc);
 				if hit && !neighbors::is_occluded(node, lod, &point){
-					carved.set_tree_non_recursive(&loc, &mut Some(true));
+					carved.set_tree_iterative(&loc, &mut Some(true));
 				}
 			}
 		}

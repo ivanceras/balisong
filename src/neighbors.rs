@@ -17,7 +17,7 @@ pub  fn  get_neighbors<T> (node:&Voxtree<T>, lod:&LOD, point:&Point, neighbors_d
 		if location::is_bounded(lod, vec_point.x, vec_point.y, vec_point.z){
 			let loc = location::from_xyz(lod, vec_point.x as u64, vec_point.y as u64, vec_point.z as u64);
 			//let (iteration, hit) = node.is_location_occupied(&loc);
-			let (iteration, hit) = node.is_location_occupied_non_recursive(&loc);
+			let (iteration, hit) = node.is_location_occupied_iterative(&loc);
 			if hit{
 				neighbors_loc.push(vec_point);
 			}
@@ -37,7 +37,7 @@ pub  fn  get_non_occluded_neighbors<T> (node:&Voxtree<T>, lod:&LOD, point:&Point
 		if location::is_bounded(lod, vec_point.x, vec_point.y, vec_point.z){
 			let loc = location::from_xyz(lod, vec_point.x as u64, vec_point.y as u64, vec_point.z as u64);
 			//let (iteration, hit) = node.is_location_occupied(&loc);
-			let (iteration, hit) = node.is_location_occupied_non_recursive(&loc);
+			let (iteration, hit) = node.is_location_occupied_iterative(&loc);
 			if !is_occluded(node, lod, &vec_point) && hit{
 				neighbors_loc.push(vec_point);
 			}
@@ -57,7 +57,7 @@ pub  fn  get_empty_neighbors<T> (node:&Voxtree<T>, lod:&LOD, point:&Point, neigh
 		if location::is_bounded(lod, vec_point.x, vec_point.y, vec_point.z){
 			let loc = location::from_xyz(lod, vec_point.x as u64, vec_point.y as u64, vec_point.z as u64);
 			//let (iteration, hit) = node.is_location_occupied(&loc);
-			let (iteration, hit) = node.is_location_occupied_non_recursive(&loc);
+			let (iteration, hit) = node.is_location_occupied_iterative(&loc);
 			if !hit{
 				neighbors_loc.push(vec_point);
 			}
