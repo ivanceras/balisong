@@ -10,7 +10,9 @@ use std::str::FromStr;
 use std::num::Float;
 use color::Color;
 use location;
-use voxtree::Voxtree;
+use voxel::voxtree::Voxtree;
+use voxel::voxbit::Voxbit;
+use voxel::vox::Vox;
 use normal::Normal;
 use voxelizer;
 use lod::LOD;
@@ -203,37 +205,34 @@ fn read_data(reader:&mut BufRead, size:u64)->Voxtree<Normal>{
 		
 		println!("There are {} voxels",linear_voxels.len());
 		let mut cnt = 0;
-		let mut root = Voxtree::new();
+		let mut root = Voxbit::new();
 		println!("loading binvox....");
 		let mut percentage = 0;
 		let mut index = 0;
-		//for j in 0..linear_voxels.len(){
 		for value in &linear_voxels{
 			let new_percentage = ((index as f64 / linear_voxels.len() as f64) * 100.0).round() as u64;
 			if percentage != new_percentage {
 				println!("{}%",new_percentage);
 			}
 			percentage = new_percentage;
-			//let value = linear_voxels[j];
 			if *value > 0 {//no carving
 				let (x,y,z) = location::index_to_xyz(&lod, index as u64);
 				let loc =  location::from_xyz(&lod, x, y, z);
-				root.set_tree_iterative(&loc, &mut Some(true));
+				root.set_location(&loc);
 				cnt += 1;
 			}
 			index += 1;
 		}
-		println!("There are {{{}}}  solid voxels..",cnt);
+		println!("before shrink leaves: {}",root.count_leaves());
 		let mut normals = Voxtree::new();
 		if constants::PRECALCULATE_NORMALS{
 			normals = voxelizer::calculate_normals(&root, &lod);
 		}
-		drop(root);
 		let smoothing_iteration = 1;//2 is enough
 		if constants::SMOOTHEN_NORMALS{
 			for k in 0..smoothing_iteration{
 				println!("Pass {}.. ",k);
-				normals = voxelizer::smoothen_normals(&normals, &lod);
+				normals = voxelizer::smoothen_normals(&root, &normals, &lod);
 			}
 		}
 		return normals;

@@ -1,6 +1,8 @@
 use neighbors;
 use shape::Shape;
-use voxtree::Voxtree;
+use voxel::voxtree::Voxtree;
+use voxel::voxbit::Voxbit;
+use voxel::vox::Vox;
 use location;
 use normal::Normal;
 use point::Point;
@@ -11,7 +13,7 @@ use lod::LOD;
 pub fn voxelize<T:Shape> (required_lod:&LOD, shape:T)->(Voxtree<Normal>){
 	
 	let limit = required_lod.limit as u64;
-	let mut root = Voxtree::new();
+	let mut root = Voxbit::new();
 
 	let mut percentage = 0;
 	for x in 0..limit{
@@ -24,7 +26,9 @@ pub fn voxelize<T:Shape> (required_lod:&LOD, shape:T)->(Voxtree<Normal>){
 			for z in 0..limit{
 				if shape.is_inside(x as i64, y as i64, z as i64){
 					let loc =  location::from_xyz(required_lod, x, y, z);
-					root.set_tree_iterative(&loc, &mut Some(true));//move voxel and location to the Voxtree
+					//root.set_tree(&loc, &mut Some(true));//move voxel and location to the Voxtree
+					//root.set_content(&loc, &mut Some(true));//move voxel and location to the Voxtree
+					root.set_location(&loc);//move voxel and location to the Voxtree
 				}
 			}
 		}
@@ -36,7 +40,7 @@ pub fn voxelize<T:Shape> (required_lod:&LOD, shape:T)->(Voxtree<Normal>){
 /// for all the points that is not complete occluded
 /// calculate the normal
 
-pub fn calculate_normals(node:&Voxtree<bool>, lod:&LOD)->Voxtree<Normal>{
+pub fn calculate_normals(node:&Voxbit, lod:&LOD)->Voxtree<Normal>{
 	let mut cnt = 0;
 	let limit = lod.limit as u64;
 	let mut normals = Voxtree::new();
@@ -52,10 +56,11 @@ pub fn calculate_normals(node:&Voxtree<bool>, lod:&LOD)->Voxtree<Normal>{
 			for z in 0..limit{
 				let point = Point::new(x as i64, y as i64, z as i64);
 				let loc =  location::from_xyz(lod, x, y, z);
-				let (iteration, hit) = node.is_location_occupied_iterative(&loc);
+				let (iteration, hit) = node.is_location_occupied(&loc);
 				if  hit && !neighbors::is_occluded(node, lod, &point){
 					let normal = calculate_point_normal(node, lod, &point);
-					normals.set_tree_iterative(&loc, &mut Some(normal));
+					//normals.set_tree(&loc, &mut Some(normal));
+					normals.set_content(&loc, &mut Some(normal));
 					cnt += 1;
 				}
 			}
@@ -65,11 +70,44 @@ pub fn calculate_normals(node:&Voxtree<bool>, lod:&LOD)->Voxtree<Normal>{
 	normals
 }
 
+
+pub fn calculate_average_normals(node:&mut Voxtree<Normal>){
+	let mut stack = Vec::new();
+	stack.push(node);
+	let mut cnt = 0;
+	while stack.len() > 0{
+		//let top = match stack.pop(){
+		//	Some(x) => x,
+		//	None => panic!("Error here"),
+		//};
+		let top = stack.remove(0);
+		let mut normals = Vec::new();
+		let mut has_normals = 0;
+		let children_len = top.children.len();
+		for child in &mut top.children{
+			if child.content.is_some(){
+				cnt += 1;
+				has_normals += 1;
+				let vec_normal = child.content.clone().unwrap().unit_vector();
+				normals.push(vec_normal);
+			}
+			stack.push(child);
+		}
+
+		if has_normals > 0 && has_normals == children_len {
+			let ave_normal  = get_average(&normals);
+			println!("average normals..{}  {}",ave_normal, children_len);
+			top.content = Some(Normal::from_vector(&ave_normal));
+		}
+	}
+	println!("There are {} nodes has normals..",cnt);
+}
+
 /// get the closest occluded point
 /// get all the neigbors,
 /// get the cross product of 2 vectors neighbors at a time
 
-pub fn calculate_point_normal<T>(node:&Voxtree<T>, lod:&LOD, point:&Point)->Normal{
+pub fn calculate_point_normal(node:&Voxbit, lod:&LOD, point:&Point)->Normal{
 	let occluded = neighbors::get_closest_occluded_neighbor_towards_center(node, lod, point);
 	if occluded.is_some(){
 		let normal = calculate_normal_based_occluded_point(node, lod, point, &(occluded.unwrap()));
@@ -95,7 +133,7 @@ fn get_normal_from_center(lod:&LOD, point:&Point)->Vector{
 }
 
 
-fn calculate_normal_based_occluded_point<T>(node:&Voxtree<T>, lod:&LOD, point:&Point, occluded:&Point)->Vector{
+fn calculate_normal_based_occluded_point(node:&Voxbit, lod:&LOD, point:&Point, occluded:&Point)->Vector{
 	let neighbors = neighbors::get_all_non_occluded_neighbors(node, lod, point);
 	let vec_occluded = Vector::from_point(point).subtract_point(occluded);//no normalization
 	
@@ -130,7 +168,7 @@ fn calculate_normal_based_occluded_point<T>(node:&Voxtree<T>, lod:&LOD, point:&P
 	vec_normal
 }
 
-fn calculate_normal_based_empty_neighbor<T>(node:&Voxtree<T>, lod:&LOD, point:&Point, closest_empty:&Point)->Vector{
+fn calculate_normal_based_empty_neighbor(node:&Voxbit, lod:&LOD, point:&Point, closest_empty:&Point)->Vector{
 	let empty_neighbors = neighbors::get_all_empty_neighbors(node, lod, point);
 	let vec_closest = Vector::from_point(point).subtract_point(closest_empty);
 	
@@ -186,7 +224,7 @@ fn get_average(vectors:&Vec<Vector>)->Vector{
 }
 
 ///recalculate the normals by averaging the normals at each neighbor
-pub fn smoothen_normals(initial_normals:&Voxtree<Normal>, lod:&LOD)->Voxtree<Normal>{
+pub fn smoothen_normals(node:&Voxbit, initial_normals:&Voxtree<Normal>, lod:&LOD)->Voxtree<Normal>{
 	let limit = lod.limit as u64;
 	let mut normals = Voxtree::new();
 	let mut percentage = 0;
@@ -202,10 +240,12 @@ pub fn smoothen_normals(initial_normals:&Voxtree<Normal>, lod:&LOD)->Voxtree<Nor
 				let point = Point::new(x as i64, y as i64, z as i64);
 				let loc =  location::from_xyz(lod, x, y, z);
 				//let (iteration, hit) = initial_normals.is_location_occupied(&loc);
-				let (iteration, hit) = initial_normals.is_location_occupied_iterative(&loc);
-				if hit && !neighbors::is_occluded(&initial_normals, lod, &point){
-					let normal = get_average_normal(&initial_normals, lod, &point);
-					normals.set_tree_iterative(&loc, &mut Some(normal));
+				//let (iteration, hit) = initial_normals.is_location_occupied_iterative(&loc);
+				let (iteration, hit) = initial_normals.is_location_occupied(&loc);
+				if hit && !neighbors::is_occluded(node,  lod, &point){
+					let normal = get_average_normal(node, initial_normals, lod, &point);
+					//normals.set_tree_iterative(&loc, &mut Some(normal));
+					normals.set_content(&loc, &mut Some(normal));
 				}
 			}
 		}
@@ -223,12 +263,13 @@ pub fn mipmap_voxel_normals(normals:&Voxtree<Normal>)->Voxtree<Normal>{
 	normals
 }
 
-fn get_average_normal(normals:&Voxtree<Normal>, lod:&LOD, point:&Point)->Normal{
-	let neighbors  = neighbors::get_all_non_occluded_neighbors(normals, lod, point);
+fn get_average_normal(node:&Voxbit, normals:&Voxtree<Normal>, lod:&LOD, point:&Point)->Normal{
+	let neighbors  = neighbors::get_all_non_occluded_neighbors(node, lod, point);
 	let mut i_normals = Vec::new();
 	for i in 0..neighbors.len(){
 		let loc = location::from_xyz(lod, neighbors[i].x as u64, neighbors[i].y as u64, neighbors[i].z as u64);
-		let i_normal = normals.get(&loc);
+		//let i_normal = normals.get(&loc);
+		let i_normal = normals.get_content(&loc);
 		if i_normal.is_some(){
 			let i_normal = i_normal.clone();
 			i_normals.push(i_normal.unwrap().unit_vector());
@@ -239,7 +280,7 @@ fn get_average_normal(normals:&Voxtree<Normal>, lod:&LOD, point:&Point)->Normal{
 }
 
 ///remove occluded points from the voxtree, this is to optimize memory consumption, do this after normals has been calculated
-pub fn carve_out(node:&Voxtree<bool>, lod:&LOD)->Voxtree<bool>{
+pub fn carve_out(node:&Voxbit, lod:&LOD)->Voxtree<bool>{
 	let mut carved =Voxtree::new();
 	let limit = lod.limit as u64;
 	let mut percentage = 0;
@@ -255,9 +296,11 @@ pub fn carve_out(node:&Voxtree<bool>, lod:&LOD)->Voxtree<bool>{
 				let point = Point::new(x as i64, y as i64, z as i64);
 				let loc =  location::from_xyz(lod, x, y, z);
 				//let (iteration, hit) = node.is_location_occupied(&loc);
-				let (iteration, hit) = node.is_location_occupied_iterative(&loc);
+				//let (iteration, hit) = node.is_location_occupied_iterative(&loc);
+				let (iteration, hit) = node.is_location_occupied(&loc);
 				if hit && !neighbors::is_occluded(node, lod, &point){
-					carved.set_tree_iterative(&loc, &mut Some(true));
+					//carved.set_tree_iterative(&loc, &mut Some(true));
+					carved.set_content(&loc, &mut Some(true));
 				}
 			}
 		}

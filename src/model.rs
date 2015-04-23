@@ -1,10 +1,9 @@
 use point::Point;
-use voxtree::Voxtree;
+use voxel::voxtree::Voxtree;
 use std::fmt;
 
 use normal::Normal;
 
-//an Voxtree when put in a scene
 pub struct Model{
 	pub location:Point,
 	pub normal:Voxtree<Normal>,
@@ -19,8 +18,3 @@ impl Model{
 	}
 }
 
-impl fmt::Display for Model {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "location: {}, scale:{}, normals: {}", self.location, self.scale, self.normal)
-    }
-}

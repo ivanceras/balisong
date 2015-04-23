@@ -41,5 +41,10 @@
 * Created a 2 separate implementation for setting the path and setting the leaf
 
 ##April 14, 2015
-*Made non-recursive funtions in voxtree, this is for easily creating a version for OpenCL.
+*Made non-recursive functions in voxtree, this is for easily creating a version for OpenCL.
+
+##April 22,2015
+*Refactored Voxtree into Traits, with 2 concrete classes Voxtree and Voxbit
+*Voxbit is just a path structure bitsets which constains only bitset and the childrent bitsets, this is a hope for minimizing memory usage
+*Reduced 6.4 GB to 5.3 GB by using Voxbit
 	

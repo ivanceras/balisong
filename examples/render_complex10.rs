@@ -22,16 +22,20 @@ use balisong::camera::Camera;
 use balisong::renderer;
 use balisong::model::Model;
 use balisong::voxelizer;
+use balisong::lod::LOD;
+use balisong::voxel::vox::Vox;
 
 
 fn main() {
 	let overall_start = PreciseTime::now();
 	let (lod, normals) = Binvox::read_file(format!("data/complex10.binvox"));
-	
+	normals.count_leaves();
+	//normals.traverse();
 	let screen = Screen::new(1920, 1080, 1920/2);
 
 	
 	let view_lod = screen.get_view_lod();
+	//let view_lod = LOD::new(4);
 	let limit = lod.limit as i64;
 	let r = limit as u64 / 4 as u64;
 	let cx = limit/2;

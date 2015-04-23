@@ -14,4 +14,6 @@ name = "balisong"
 
 [dependencies.regex]
 
+[dependencies.num]
+
 [features]

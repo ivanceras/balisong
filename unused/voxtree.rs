@@ -69,6 +69,43 @@ impl <T> Voxtree<T>{
 		last_node.get_node(location[last])
 	}
 	
+	pub fn traverse(&self){
+		let mut stack = Vec::new();
+		stack.push(self);
+		let mut cnt = 0;
+		while stack.len() > 0{
+			let top = match stack.pop(){
+				Some(x) => x,
+				None => panic!("Error here"),
+			};
+			for child in &top.children{
+				stack.push(child);
+				cnt += 1;
+			}
+		}
+		println!("There are {} nodes..",cnt);
+	}
+	
+	
+	pub fn count_leaves(&self){
+		let mut stack = Vec::new();
+		stack.push(self);
+		let mut cnt = 0;
+		while stack.len() > 0{
+			let top = match stack.pop(){
+				Some(x) => x,
+				None => panic!("Error here"),
+			};
+			for child in &top.children{
+				stack.push(child);
+				if child.is_leaf(){
+					cnt += 1;
+				}
+			}
+		}
+		println!("There are {} leaf nodes..",cnt);
+	}
+	
 	
 	///A much better implementation of setting
 	pub fn set_path(&mut self, location:u64){
@@ -154,7 +191,11 @@ impl <T> Voxtree<T>{
 		}
 		return index;
 	}
-	///short method
+	///
+	///short method using bitset operations
+	/// counting the number of 1's before a certain the first and only 1's in a location
+	/// subtracting 1 to base2 number will flip the bits before it
+	/// anding this value to the bitset will give the 1's before the first and only 1 in location 64bit integer 
 	/// 
 	fn fast_index_of(&self, location:u64)->usize{
 		let location = location - 1;
@@ -184,6 +225,15 @@ impl <T> Voxtree<T>{
 		(last, last_node.is_occupied(location[last]))
 	}
 	
+	
+	///
+	///it is a leaf when there is no children
+	///
+	///
+	
+	pub fn is_leaf(&self)->bool{
+		self.children.len() == 0
+	}
 
 }
 

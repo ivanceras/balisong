@@ -32,3 +32,7 @@ Conversion from ply to binvox
 ##Bithacks 
  http://graphics.stanford.edu/~seander/bithacks.html
  http://bits.stephan-brumme.com/
+ 
+ ## Generics and Nums
+  http://doc.rust-lang.org/num/num/traits/trait.PrimInt.html
+ 

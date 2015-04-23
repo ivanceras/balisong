@@ -1,8 +1,9 @@
 extern crate time;
 extern crate regex;
+extern crate num;
 
 pub mod constants;
-pub mod voxtree;
+//pub mod voxtree;
 pub mod point;
 pub mod shape;
 pub mod normal;
@@ -19,5 +20,4 @@ pub mod model;
 pub mod binvox;
 pub mod neighbors;
 pub mod lod;
-pub mod bitset;
-pub mod voxline;
+pub mod voxel;

@@ -1,6 +1,7 @@
 extern crate time;
 
-use voxtree::Voxtree;
+use voxel::voxtree::Voxtree;
+use voxel::vox::Vox;
 use point::Point;
 use shape::{Shape, Sphere};
 use normal::Normal;
@@ -12,7 +13,7 @@ use time::PreciseTime;
 use model::Model;
 use lod::LOD;
 
-mod voxtree;
+//mod voxtree;
 mod point;
 mod shape;
 mod normal;
@@ -29,11 +30,13 @@ mod model;
 mod renderer;
 mod constants;
 mod lod;
+mod voxel;
 
 fn main() {
 	let lod = LOD::new(4);
 	let screen = Screen::new(1920, 1080, 1920/2);
-	let view_lod = screen.get_view_lod();
+	//let view_lod = screen.get_view_lod();
+	let view_lod = LOD::new(4);
 	println!("lod = {}",lod);
 	println!("view_lod = {}",view_lod);
 
@@ -47,7 +50,10 @@ fn main() {
 	let shape_name = shape.name();
 	println!("voxelizing...{}", shape_name);
 	let start = PreciseTime::now();
-	let normals = voxelizer::voxelize(&lod, shape);
+	let mut normals = voxelizer::voxelize(&lod, shape);
+	normals.count_leaves();
+	//normals.traverse();
+	voxelizer::calculate_average_normals(&mut normals);
 	//voxelizer::calculate_normals(&root, lod);
 	
 	let duration = start.to(PreciseTime::now());

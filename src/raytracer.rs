@@ -3,7 +3,8 @@ use std::thread::Thread;
 use std::sync::Arc;
 use time::PreciseTime;
 
-use voxtree::Voxtree;
+use voxel::voxtree::Voxtree;
+use voxel::vox::Vox;
 use point::Point;
 use ray::Ray;
 use model::Model;
@@ -25,10 +26,18 @@ pub fn factored_trace_ray_normals(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:R
 	
 	if hit_loc.is_some(){
 		let hit_loc = hit_loc.unwrap();
-		let normal = model.normal.get(&hit_loc).clone().unwrap();
+		//let normal = model.normal.get(&hit_loc).clone().unwrap();
+		let normal = model.normal.get_content(&hit_loc).clone().unwrap();
+		let (x,y,z) = location::to_xyz(&hit_loc);
+		//let point = Point::new(x as i64, y as i64, z as i64);
+		//let normal = voxelizer::calculate_point_normal(&model.normal, &view_lod, &point); 
+		
+		if normal.x == 0 && normal.y == 0 && normal.z == 0{
+			return Color::purple();
+		}
+		
 		let normal_vec = normal.unit_vector();
 		
-		let (x,y,z) = location::to_xyz(&hit_loc);
 		let photon = Vector::new(x as f64,y as f64,z as f64);
 		
 		let light_vec = light.subtract(&photon).unit_vector();
@@ -55,7 +64,7 @@ pub fn hit_location(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:Ray, model:&Mod
 	
 	let limit = lod.limit as i64;
 	let view_limit = view_lod.limit as i64;
-	let scale = obj_scale * limit as f64/view_limit as f64; //scale of object to LOD to view lod
+	let mut scale = obj_scale * limit as f64/view_limit as f64; //scale of object to LOD to view lod
 	let mut length = 0.0;
 	while length < max_distance as f64{
 		let photon = ray.at_length(length);
@@ -64,17 +73,25 @@ pub fn hit_location(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:Ray, model:&Mod
 		let photon_scale = photon_rel.scale(scale).as_point();
 		if location::is_bounded(lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
 			let vec_location = location::from_xyz(lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
-			let (iteration, hit) = model.normal.is_location_occupied_iterative(&vec_location);
+			//let (iteration, hit) = model.normal.is_location_occupied_iterative(&vec_location);
+			let (iteration, hit) = model.normal.is_location_occupied(&vec_location);
 			if hit {
 				return Some(vec_location);
-			}
-			else{
-				//println!("no hit at iteration: {}", iteration);
 			}
 		}
 		length += 1.0;
 	}
 	None
+}
+
+
+fn clamp_location(location:&Vec<u64>, view_lod:&LOD)->Vec<u64>{
+	let mut clamped = Vec::new();
+	let lod = view_lod.lod;
+	for i in 0..lod{
+		clamped.push(location[i as usize]);
+	}
+	clamped
 }
 
 //blending the normal color with model color
