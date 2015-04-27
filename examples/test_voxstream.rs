@@ -3,7 +3,7 @@ extern crate balisong;
 use balisong::voxel::voxstream::Voxstream;
 
 fn main(){
-	let stream:Voxstream<u64>  = Voxstream::new();
-	let loc = vec![64, 1];
-	stream.get_index(&loc);
+	let mut stream:Voxstream<u64>  = Voxstream::new();
+	stream.insert_root();
+	println!("total_ones: {}", stream.total_ones());
 }

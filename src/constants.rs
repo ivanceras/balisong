@@ -2,6 +2,7 @@
 pub static PRECALCULATE_NORMALS:bool = true;
 pub static USE_GAMMA_CORRECTION:bool = false;
 pub static SMOOTHEN_NORMALS:bool = true;
+pub static SMOOTHING_ITERATION:usize = 5;
 //neighbor radius for extraction of neighboring voxels
 pub static NEIGHBOR_RADIUS:f64 = 1.0;
 

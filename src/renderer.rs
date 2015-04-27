@@ -144,7 +144,7 @@ pub fn trace_pixel(lod:&LOD, view_lod:&LOD, model:&Model, screen:&Screen, camera
 	//let color = raytracer::trace_ray(screen, lod, view_lod, pixel_ray, model, model.scale, max_distance);
 	//let color = raytracer::trace_ray_normals(screen, lod, view_lod, pixel_ray, model, model.scale, max_distance);
 	//let color = raytracer::adaptive_trace_ray_normals(screen, lod, view_lod, &pixel_ray, model, model.scale, max_distance);
-	let color = raytracer::factored_trace_ray_normals(screen, lod, view_lod, pixel_ray, model, model.scale, max_distance);
+	let color = raytracer::factored_trace_ray_normals(screen, lod, view_lod, &pixel_ray, model, model.scale, max_distance);
 	color
 }
 

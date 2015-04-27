@@ -228,9 +228,8 @@ fn read_data(reader:&mut BufRead, size:u64)->Voxtree<Normal>{
 		if constants::PRECALCULATE_NORMALS{
 			normals = voxelizer::calculate_normals(&root, &lod);
 		}
-		let smoothing_iteration = 1;//2 is enough
 		if constants::SMOOTHEN_NORMALS{
-			for k in 0..smoothing_iteration{
+			for k in 0..constants::SMOOTHING_ITERATION{
 				println!("Pass {}.. ",k);
 				normals = voxelizer::smoothen_normals(&root, &normals, &lod);
 			}

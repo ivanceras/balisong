@@ -19,7 +19,7 @@ use voxelizer;
 use constants;
 
 
-pub fn factored_trace_ray_normals(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:Ray, model:&Model, obj_scale:f64, max_distance:u64 )->Color{
+pub fn factored_trace_ray_normals(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:&Ray, model:&Model, obj_scale:f64, max_distance:u64 )->Color{
 	let view_limit = view_lod.limit as i64;
 	let light = Vector::new(-view_limit as f64 * 2.0, -view_limit as f64 * 2.0, view_limit as f64 * 2.0);
 	let hit_loc = hit_location(screen, lod, view_lod, ray, model, obj_scale, max_distance);
@@ -29,16 +29,19 @@ pub fn factored_trace_ray_normals(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:R
 		//let normal = model.normal.get(&hit_loc).clone().unwrap();
 		let normal = model.normal.get_content(&hit_loc).clone().unwrap();
 		let (x,y,z) = location::to_xyz(&hit_loc);
-		//let point = Point::new(x as i64, y as i64, z as i64);
-		//let normal = voxelizer::calculate_point_normal(&model.normal, &view_lod, &point); 
 		
+		//quick cellshading effect
+		let normal_vec = normal.unit_vector();
+		let photon = Vector::new(x as f64,y as f64,z as f64);
+
+		let cd_point_dot = normal_vec.dot(&ray.unit_dir);
+		if cd_point_dot >= -0.2 && cd_point_dot <= 0.2{ //dot product close to zero
+			return Color::black();
+		}
 		if normal.x == 0 && normal.y == 0 && normal.z == 0{
 			return Color::purple();
 		}
 		
-		let normal_vec = normal.unit_vector();
-		
-		let photon = Vector::new(x as f64,y as f64,z as f64);
 		
 		let light_vec = light.subtract(&photon).unit_vector();
 		let intensity = normal_vec.dot(&light_vec);
@@ -60,7 +63,7 @@ pub fn factored_trace_ray_normals(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:R
 	
 }
 
-pub fn hit_location(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:Ray, model:&Model, obj_scale:f64, max_distance:u64)->Option<Vec<u64>>{
+pub fn hit_location(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:&Ray, model:&Model, obj_scale:f64, max_distance:u64)->Option<Vec<u64>>{
 	
 	let limit = lod.limit as i64;
 	let view_limit = view_lod.limit as i64;

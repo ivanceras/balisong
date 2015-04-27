@@ -26,8 +26,6 @@ pub fn voxelize<T:Shape> (required_lod:&LOD, shape:T)->(Voxtree<Normal>){
 			for z in 0..limit{
 				if shape.is_inside(x as i64, y as i64, z as i64){
 					let loc =  location::from_xyz(required_lod, x, y, z);
-					//root.set_tree(&loc, &mut Some(true));//move voxel and location to the Voxtree
-					//root.set_content(&loc, &mut Some(true));//move voxel and location to the Voxtree
 					root.set_location(&loc);//move voxel and location to the Voxtree
 				}
 			}
@@ -59,7 +57,6 @@ pub fn calculate_normals(node:&Voxbit, lod:&LOD)->Voxtree<Normal>{
 				let (iteration, hit) = node.is_location_occupied(&loc);
 				if  hit && !neighbors::is_occluded(node, lod, &point){
 					let normal = calculate_point_normal(node, lod, &point);
-					//normals.set_tree(&loc, &mut Some(normal));
 					normals.set_content(&loc, &mut Some(normal));
 					cnt += 1;
 				}
@@ -96,7 +93,7 @@ pub fn calculate_average_normals(node:&mut Voxtree<Normal>){
 
 		if has_normals > 0 && has_normals == children_len {
 			let ave_normal  = get_average(&normals);
-			println!("average normals..{}  {}",ave_normal, children_len);
+			//println!("average normals..{}  {}",ave_normal, children_len);
 			top.content = Some(Normal::from_vector(&ave_normal));
 		}
 	}

@@ -53,7 +53,6 @@ fn main() {
 	let mut normals = voxelizer::voxelize(&lod, shape);
 	normals.count_leaves();
 	//normals.traverse();
-	voxelizer::calculate_average_normals(&mut normals);
 	//voxelizer::calculate_normals(&root, lod);
 	
 	let duration = start.to(PreciseTime::now());

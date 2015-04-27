@@ -6,8 +6,8 @@ use std::fmt;
 use lod::LOD;
 
 pub struct Ray{
-	origin:Point,
-	unit_dir: Vector, //unit vector of direction
+	pub origin:Point,
+	pub unit_dir: Vector, //unit vector of direction
 }
 
 impl Ray{
