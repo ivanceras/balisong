@@ -2,7 +2,6 @@
 
 use std::fmt;
 use vector::Vector;
-use std::num::Float;
 
 ///
 /// This is a vector expressed in 3 i8's instead of 3 f64's

@@ -1,7 +1,6 @@
 //computes the limit and volumes of based on LOD
 //lod can not be greater than 9
 
-use std::num::Float;
 use std::fmt;
 
 use constants;

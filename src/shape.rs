@@ -1,6 +1,5 @@
 //shape.rs
 use point::Point;
-use std::num::Float;
 use vector::Vector;
 use normal::Normal;
 

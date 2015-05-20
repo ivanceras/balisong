@@ -47,4 +47,10 @@
 *Refactored Voxtree into Traits, with 2 concrete classes Voxtree and Voxbit
 *Voxbit is just a path structure bitsets which constains only bitset and the childrent bitsets, this is a hope for minimizing memory usage
 *Reduced 6.4 GB to 5.3 GB by using Voxbit
+
+##May 6, 2015
+*Able to move out scale independent of the ray and model LOD's, this will be the key to dynamic LOD adjustment	
+
+##May 7, 2015
+*Now able to render a smoother lower leve LOD but seems the continuity of the voxel is a bit off. Maybe needs to put back morton encoding.
 	

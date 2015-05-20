@@ -7,7 +7,6 @@ use vector::Vector;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::str::FromStr;
-use std::num::Float;
 use color::Color;
 use location;
 use voxel::voxtree::Voxtree;
@@ -233,6 +232,15 @@ fn read_data(reader:&mut BufRead, size:u64)->Voxtree<Normal>{
 				println!("Pass {}.. ",k);
 				normals = voxelizer::smoothen_normals(&root, &normals, &lod);
 			}
+		}
+		//calculate lower normals
+		for l in 1..lod.lod{
+			let lod1 = lod.lod - l;// if lod = 5, then 4,3,2,1
+			let lower_lod = LOD::new(lod1); 
+			println!("Calculating normals at LOD: {} ",lod1);
+			//normals = voxelizer::calculate_lower_lod_normals(&root, normals, &lower_lod);
+			let orig_normals = normals.clone();
+			normals = voxelizer::calculate_lower_lod_normals_using_average(&root, normals, &orig_normals, &lower_lod);
 		}
 		return normals;
 		

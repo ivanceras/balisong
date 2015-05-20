@@ -1,8 +1,6 @@
 extern crate balisong;
 extern crate time;
 
-use std::num::Float;
-use std::num::SignedInt;
 use std::sync::Arc;
 use std::thread::Thread;
 use time::PreciseTime;
@@ -35,6 +33,9 @@ fn main() {
 
 	
 	let view_lod = screen.get_view_lod();
+	//let view_lod = LOD::new(lod.lod-4);
+	println!("view_lod: {}", view_lod);
+	println!("lod: {}",lod);
 	//let view_lod = LOD::new(4);
 	let limit = lod.limit as i64;
 	let r = limit as u64 / 4 as u64;

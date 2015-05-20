@@ -1,5 +1,4 @@
 //screen.rs
-use std::num::Float; 
 
 use vector::Vector;
 use lod::LOD;

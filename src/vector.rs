@@ -1,5 +1,4 @@
 //vector.rs
-use std::num::Float;
 use std::fmt;
 use point::Point;
 

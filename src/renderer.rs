@@ -2,7 +2,6 @@ use std::path::Path;
 use std::fs::File;
 use std::io::Write;
 use std::sync::mpsc;
-use std::num::Float;
 use std::thread;
 use std::sync::Arc;
 use time::PreciseTime;
@@ -13,10 +12,11 @@ use ray::Ray;
 use raytracer;
 use model::Model;
 use color::Color;
-//use std::os;
 use lod::LOD;
+use std::cmp;
 
 ///non threaded
+/*
 pub fn render(lod:&LOD, view_lod:&LOD, model:Model, screen:&Screen, camera:&Camera)->Vec<Color>{
 	println!("NO threads...");
 	let mut pixels = Vec::new();
@@ -36,6 +36,7 @@ pub fn render(lod:&LOD, view_lod:&LOD, model:Model, screen:&Screen, camera:&Came
 	}
 	pixels
 }
+*/
 
 
 ///
@@ -55,7 +56,9 @@ pub fn render_threaded(lod:&LOD, view_lod:&LOD, model:Model, screen:&Screen, cam
 	let (tx, rx) = mpsc::channel();
 	
 	let view_limit = view_lod.limit as u64;
-	let max_distance = 2 * (view_limit as f64 * view_limit as f64).sqrt().round() as u64;
+	let max_limit = cmp::max(view_limit, lod.limit as u64);
+	let max_distance = 2 * (max_limit as f64 * max_limit as f64).sqrt().round() as u64;
+	//let max_distance = 2 * (view_limit as f64 * view_limit as f64).sqrt().round() as u64;
 	
 
 	let arc_model = Arc::new(model);
@@ -87,9 +90,14 @@ pub fn render_threaded(lod:&LOD, view_lod:&LOD, model:Model, screen:&Screen, cam
 				let x = index as i64 - (y * width);
 				let start = PreciseTime::now();
 				let color = trace_pixel(&lod, &view_lod, &arc_model_clone, &arc_screen_clone, &arc_camera_clone, x, y, max_distance);
-				let duration = start.to(PreciseTime::now());
-				durations.push(duration.num_milliseconds() as f64);
-				line.push(color);
+				if color.is_some(){
+					let duration = start.to(PreciseTime::now());
+					durations.push(duration.num_milliseconds() as f64);
+					line.push(color.unwrap());
+				}
+				else{
+					line.push(Color::white());
+				}
 			}	
 			tx.send((start, end, line, durations));
 		});
@@ -99,9 +107,11 @@ pub fn render_threaded(lod:&LOD, view_lod:&LOD, model:Model, screen:&Screen, cam
 	for j in 0..cores{
 		let new_percentage = (j as f64 * 100.0 / cores as f64).round() as u64;
     	let (start, end, line, durations) = rx.recv().ok().expect("Could not recieve answer");
-    	let per_pixel_ave = get_average(&durations);
-    	all_average.push(per_pixel_ave);
-		println!("{}% core[{}] per_pixel_ave: {} milliseconds", new_percentage, j, per_pixel_ave);
+    	if durations.len() > 0{
+    		let per_pixel_ave = get_average(&durations);
+			println!("{}% core[{}] per_pixel_ave: {} milliseconds", new_percentage, j, per_pixel_ave);
+    		all_average.push(per_pixel_ave);
+    	}
    		let mut cnt = 0;
    		for i in start..end{
 			pixels[i] = line[cnt].clone();
@@ -135,7 +145,7 @@ pub fn trace_pixel(lod:&LOD, view_lod:&LOD, model:&Model, screen:&Screen, camera
 }
 */
 
-pub fn trace_pixel(lod:&LOD, view_lod:&LOD, model:&Model, screen:&Screen, camera:&Camera, x:i64, y:i64, max_distance:u64)->Color{
+pub fn trace_pixel(lod:&LOD, view_lod:&LOD, model:&Model, screen:&Screen, camera:&Camera, x:i64, y:i64, max_distance:u64)->Option<Color>{
 	let pixel_vector = screen.at_pixel(x, y);
 	let pixel_vector = pixel_vector.rotate_at_y(camera.roll);
 	let pixel_vector = pixel_vector.rotate_at_x(camera.pitch);

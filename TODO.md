@@ -175,3 +175,6 @@
 		* make a ray box intersection to fast remove rays that has no hope of hitting the box
 		* for all the other rays that may hit the box, do an adaptive LOD search
 			* Starting at a point of increment with 1 voxel distance at higher LOD. 	 
+
+##May 5, 2015
+	* Progresssive ray marching, radius of intersection is shortened when there is an intersection, advances to next length when none.		

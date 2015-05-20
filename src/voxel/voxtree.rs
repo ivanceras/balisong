@@ -1,7 +1,7 @@
 use voxel::vox::Vox;
 
 /// voxel tree for fast traversal of content
-
+#[derive(Clone)]
 pub struct Voxtree<T>{
 	pub bitset:u64,
 	pub content:Option<T>,

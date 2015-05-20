@@ -68,36 +68,85 @@ pub fn calculate_normals(node:&Voxbit, lod:&LOD)->Voxtree<Normal>{
 }
 
 
-pub fn calculate_average_normals(node:&mut Voxtree<Normal>){
-	let mut stack = Vec::new();
-	stack.push(node);
-	let mut cnt = 0;
-	while stack.len() > 0{
-		//let top = match stack.pop(){
-		//	Some(x) => x,
-		//	None => panic!("Error here"),
-		//};
-		let top = stack.remove(0);
-		let mut normals = Vec::new();
-		let mut has_normals = 0;
-		let children_len = top.children.len();
-		for child in &mut top.children{
-			if child.content.is_some(){
-				cnt += 1;
-				has_normals += 1;
-				let vec_normal = child.content.clone().unwrap().unit_vector();
-				normals.push(vec_normal);
-			}
-			stack.push(child);
-		}
 
-		if has_normals > 0 && has_normals == children_len {
-			let ave_normal  = get_average(&normals);
-			//println!("average normals..{}  {}",ave_normal, children_len);
-			top.content = Some(Normal::from_vector(&ave_normal));
+
+pub fn calculate_lower_lod_normals(node:&Voxbit, mut normals:Voxtree<Normal>, lod:&LOD)->Voxtree<Normal>{
+	let mut cnt = 0;
+	let limit = lod.limit as u64;
+	//let mut normals = Voxtree::new();
+	let mut percentage = 0;
+	println!("Calculating lower LOD normals...");
+	for x in 0..limit{
+		let new_percentage = (x as f64 * 100.0 / limit as f64).round() as u64;
+		if new_percentage > percentage{
+			println!("{}%",new_percentage);
+		}
+		percentage = new_percentage;
+		for y in 0..limit{
+			for z in 0..limit{
+				let point = Point::new(x as i64, y as i64, z as i64);
+				let loc =  location::from_xyz(lod, x, y, z);
+				let (iteration, hit) = normals.is_location_occupied(&loc);
+				if  hit && !neighbors::is_occluded(node, lod, &point){
+					let normal = calculate_point_normal(node, lod, &point);
+					normals.set_content(&loc, &mut Some(normal));
+					cnt += 1;
+				}
+			}
 		}
 	}
-	println!("There are {} nodes has normals..",cnt);
+	normals
+}
+
+
+pub fn calculate_lower_lod_normals_using_average(node:&Voxbit, mut normals:Voxtree<Normal>, orig_normals:&Voxtree<Normal>, lod:&LOD)->Voxtree<Normal>{
+	let mut cnt = 0;
+	let limit = lod.limit as u64;
+	//let mut normals = Voxtree::new();
+	let mut percentage = 0;
+	println!("Calculating lower LOD normals...");
+	for x in 0..limit{
+		let new_percentage = (x as f64 * 100.0 / limit as f64).round() as u64;
+		if new_percentage > percentage{
+			println!("{}%",new_percentage);
+		}
+		percentage = new_percentage;
+		for y in 0..limit{
+			for z in 0..limit{
+				let point = Point::new(x as i64, y as i64, z as i64);
+				let loc =  location::from_xyz(lod, x, y, z);
+				let (iteration, hit) = normals.is_location_occupied(&loc);
+				if  hit && !neighbors::is_occluded(node, lod, &point){
+					//let normal = calculate_point_normal(node, lod, &point);
+					let tree = orig_normals.get_tree(&loc);
+					let ave_normal = calculate_children_normals(&tree.children);
+					normals.set_content(&loc, &mut Some(ave_normal));
+					cnt += 1;
+				}
+			}
+		}
+	}
+	normals
+}
+
+fn calculate_children_normals(children:&Vec<Voxtree<Normal>>)->Normal{
+	let mut normals = Vec::new();
+	for i in 0..children.len(){
+		let content = &children[i].content;
+		if content.is_some(){
+			normals.push(content.clone().unwrap());
+		}
+	}
+	calculate_average_normal(normals)
+}
+
+fn calculate_average_normal(normals:Vec<Normal>)->Normal{
+	let mut vectors = Vec::new();
+	for n in normals{
+		vectors.push(n.unit_vector());
+	}
+	let average = get_average(&vectors).unit_vector();
+	Normal::from_vector(&average)
 }
 
 /// get the closest occluded point
