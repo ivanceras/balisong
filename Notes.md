@@ -44,3 +44,5 @@ Conversion from ply to binvox
 #3D resources
 http://graphics.cs.williams.edu/data/meshes.xml
  
+ # Use this rendering code here to make this work on opencl GPU
+https://raw.githubusercontent.com/thi-ng/raymarchcl/master/resources/renderer.cl 
