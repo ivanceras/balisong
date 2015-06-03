@@ -11,6 +11,8 @@ Conversion from ply to binvox
 
 ./binvox -cb -d 512 dragon.ply  
 
+./binvox -cb -ri -aw -d 256 complex.ply
+
 ##Articles to read
 
 * Inigo Quilez
@@ -43,4 +45,7 @@ Conversion from ply to binvox
 
 #3D resources
 http://graphics.cs.williams.edu/data/meshes.xml
+
+## Bresenham-based supercover line algorithm
+http://lifc.univ-fcomte.fr/home/~ededu/projects/bresenham/
  
