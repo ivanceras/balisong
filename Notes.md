@@ -45,7 +45,13 @@ Conversion from ply to binvox
 
 #3D resources
 http://graphics.cs.williams.edu/data/meshes.xml
+<<<<<<< HEAD
 
 ## Bresenham-based supercover line algorithm
 http://lifc.univ-fcomte.fr/home/~ededu/projects/bresenham/
  
+=======
+ 
+ # Use this rendering code here to make this work on opencl GPU
+https://raw.githubusercontent.com/thi-ng/raymarchcl/master/resources/renderer.cl 
+>>>>>>> dca6159473b2a73bd1ccb76a8a6d8db9be6c0dfc
