@@ -148,25 +148,25 @@ pub fn get_empty_vertex_neighbors (node:&Voxbit, lod:&LOD, point:&Point)->Vec<Po
 
 /// return the array of Voxtree that falls on the 12 edge neighbors, these are the second closes neighbors
 ///
-///             ================
-///             12 edge neighbors       
-///             ================   
-///             
-///             0  1  1
-///             1  0  1
-///             1  1  0
-///             
-///             0 -1 -1
-///            -1  0 -1
-///            -1 -1  0
-///
-///            -1  1  0
-///             0 -1  1
-///             0  1 -1
-///
-///             1  0  1
-///             1 -1  0
-///             1  0 -1
+//             ================
+//             12 edge neighbors       
+//             ================   
+//             
+//             0  1  1
+//             1  0  1
+//             1  1  0
+//             
+//             0 -1 -1
+//            -1  0 -1
+//            -1 -1  0
+//
+//            -1  1  0
+//             0 -1  1
+//             0  1 -1
+//
+//             1  0  1
+//             1 -1  0
+//             1  0 -1
 
 pub fn get_edge_neighbors(node:&Voxbit, lod:&LOD, point:&Point)->Vec<Point>{
 	let neighbor_loc = vec![

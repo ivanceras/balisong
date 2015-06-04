@@ -21,3 +21,4 @@ pub mod binvox;
 pub mod neighbors;
 pub mod lod;
 pub mod voxel;
+pub mod morton;

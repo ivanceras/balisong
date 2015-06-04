@@ -31,6 +31,7 @@ mod renderer;
 mod constants;
 mod lod;
 mod voxel;
+mod morton;
 
 fn main() {
 	let lod = LOD::new(4);

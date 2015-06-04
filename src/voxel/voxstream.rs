@@ -23,22 +23,22 @@ impl <T> Voxstream<T>{
 	
 	///determine the number of 1's at the higher LOD before it reaches at the required LOD
 	///
-	/// ie. location: 
-	///    0001 0000
-	///    0010 0000
-	///    0000 1000
-	///
-	/// ie. contents ( each set bit points to the whole integer at the next level
-	///		                          0:
-	///                           [1101 1111]
-	///
-	///		    6:           5:          4:           3:          2:         1:          0:
-	///		  [1001 0001] [1010 1010] [0101 0101] [0000 0001] [1111 000] [0000 1111] [0110 0111]
-	///
-	///      6:2         6:1      6:0
-	///  [0101 0101]  [1010 0001] [0001 0001]  ....
-	///
-	///
+	// ie. location: 
+	//    0001 0000
+	//    0010 0000
+	//    0000 1000
+	//
+	// ie. contents ( each set bit points to the whole integer at the next level
+	//		                          0:
+	//                           [1101 1111]
+	//
+	//		    6:           5:          4:           3:          2:         1:          0:
+	//		  [1001 0001] [1010 1010] [0101 0101] [0000 0001] [1111 000] [0000 1111] [0110 0111]
+	//
+	//      6:2         6:1      6:0
+	//  [0101 0101]  [1010 0001] [0001 0001]  ....
+	//
+	//
 	/// algorithmn : count the number of 1's at each level
 	/// If how many 1's is there at the root node, that is equivalent to the number of bytes to be read at the succedding node
 	/// The total of 1's that in the previous level is the total number of bytes to the next level and so on and so forth
