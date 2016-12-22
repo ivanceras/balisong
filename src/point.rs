@@ -3,9 +3,9 @@
 use std::fmt;
 
 pub struct Point{
-	pub x:i64,
-	pub y:i64,
-	pub z:i64
+    pub x:i64,
+    pub y:i64,
+    pub z:i64
 }
 
 impl Point{

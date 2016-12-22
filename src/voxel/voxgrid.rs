@@ -6,22 +6,22 @@ use lod::LOD;
 use location;
 
 pub struct Voxgrid<T>{
-	lod:LOD,
-	bitset:Vec<u64>,
-	content:Vec<T>,
+    lod:LOD,
+    bitset:Vec<u64>,
+    content:Vec<T>,
 }
 
 impl <T> Voxgrid<T>{
-	fn new(lod:&LOD)->Self{
-		Voxgrid{lod:lod.clone(), 
-			bitset:Vec::new(), 
-			content:Vec::new()
-		}
-	}
-	
-	fn get(&self, x:u64, y:u64, z:u64)->&T{
-		let index = location::xyz_to_index(&self.lod, x,y,z);
-		&self.content[index as usize]
-	}
+    fn new(lod:&LOD)->Self{
+        Voxgrid{lod:lod.clone(), 
+            bitset:Vec::new(), 
+            content:Vec::new()
+        }
+    }
+    
+    fn get(&self, x:u64, y:u64, z:u64)->&T{
+        let index = location::xyz_to_index(&self.lod, x,y,z);
+        &self.content[index as usize]
+    }
 }
 

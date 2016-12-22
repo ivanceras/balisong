@@ -24,33 +24,33 @@ pub fn count(arg:u64)->usize{
 
 //get at which bit that is 1.
 pub fn index_of(bitset:u64, location:u64)->usize{
-	let mut index = 0;
-	for i in 0..constants::BITS{
-		let byte = 1 << i;
-		if byte == location {
-			return index;
-		}
-		if bitset & byte == byte{
-			index += 1;
-		}
-	}
-	return index;
+    let mut index = 0;
+    for i in 0..constants::BITS{
+        let byte = 1 << i;
+        if byte == location {
+            return index;
+        }
+        if bitset & byte == byte{
+            index += 1;
+        }
+    }
+    return index;
 }
 
 /// TODO:: optimization needed 
 /// http://bits.stephan-brumme.com/lowestBitSet.html
 /// http://chessprogramming.wikispaces.com/BitScan
 pub fn lowest_bitset(x:u64)->usize{
-	let mut x = x;
-	if x == 0{
-		return 0;
- 	}
- 	let mut result = 0;
-	while (x & 1) == 0{
-     	x >>= 1;
-     	result += 1;
-   	}
- 	return result;
+    let mut x = x;
+    if x == 0{
+        return 0;
+     }
+     let mut result = 0;
+    while (x & 1) == 0{
+         x >>= 1;
+         result += 1;
+       }
+     return result;
 }
 
 /// http://bits.stephan-brumme.com/isPowerOfTwo.html

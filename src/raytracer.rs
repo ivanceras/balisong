@@ -20,166 +20,167 @@ use std::cmp;
 
 
 pub fn factored_trace_ray_normals(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:&Ray, model:&Model, obj_scale:f64, max_distance:u64 )->Option<Color>{
-	let view_limit = view_lod.limit as i64;
-	let light = Vector::new(-view_limit as f64 * 2.0, -view_limit as f64 * 2.0, view_limit as f64 * 2.0);
-	let hit_loc = hit_location(screen, lod, view_lod, ray, model, obj_scale, max_distance);
-	
-	if hit_loc.is_some(){
-		let hit_loc = hit_loc.unwrap();
-		let normal = model.normal.get_content(&hit_loc).clone();
-		if normal.is_some(){
-			let normal = normal.unwrap();
-			let (x,y,z) = location::to_xyz(&hit_loc);
-			
-			let normal_vec = normal.unit_vector();
-			let photon = Vector::new(x as f64,y as f64,z as f64);
-	
-			//quick cellshading effect
-			if constants::DO_CELLSHADING{
-				let cd_point_dot = normal_vec.dot(&ray.unit_dir);
-				if cd_point_dot >= -0.2 && cd_point_dot <= 0.2{ //dot product close to zero
-					return Some(Color::black());
-				}
-			}
-			if normal.x == 0 && normal.y == 0 && normal.z == 0{
-				return Some(Color::purple());
-			}
-			
-			
-			let light_vec = light.subtract(&photon).unit_vector();
-			let intensity = normal_vec.dot(&light_vec);
-			
-			let object_color = Color::new( (255.0/2.0 * (intensity + 1.0)).round() as u8, 
-								(233.0/2.0 * (intensity + 1.0)).round() as u8, 
-								(0.0/2.0 * (intensity + 1.0)).round() as u8);
-			
-			let color = Color::new( (127.0 * (intensity + 1.0)).round() as u8, 
-											(127.0 * (intensity + 1.0)).round() as u8, 
-											(127.0 * (intensity + 1.0)).round() as u8);
-			
-			let fcolor = blend(object_color, color);
-			return Some(fcolor);
-		}
-		else{
-			println!("no normals found here.. fix this");
-			return None;
-		}
-	}
-	else{
-		return None;
-	}
-	
+    let view_limit = view_lod.limit as i64;
+    let light = Vector::new(-view_limit as f64 * 2.0, -view_limit as f64 * 2.0, view_limit as f64 * 2.0);
+    let hit_loc = hit_location(screen, lod, view_lod, ray, model, obj_scale, max_distance);
+    
+    if hit_loc.is_some(){
+        let hit_loc = hit_loc.unwrap();
+        let normal = model.normal.get_content(&hit_loc).clone();
+        if normal.is_some(){
+            let normal = normal.unwrap();
+            let (x,y,z) = location::to_xyz(&hit_loc);
+            
+            let normal_vec = normal.unit_vector();
+            let photon = Vector::new(x as f64,y as f64,z as f64);
+    
+            //quick cellshading effect
+            if constants::DO_CELLSHADING{
+                let cd_point_dot = normal_vec.dot(&ray.unit_dir);
+                if cd_point_dot >= -0.2 && cd_point_dot <= 0.2{ //dot product close to zero
+                    return Some(Color::black());
+                }
+            }
+            if normal.x == 0 && normal.y == 0 && normal.z == 0{
+                return Some(Color::purple());
+            }
+            
+            
+            let light_vec = light.subtract(&photon).unit_vector();
+            let intensity = normal_vec.dot(&light_vec);
+            
+            let object_color = Color::new( (255.0/2.0 * (intensity + 1.0)).round() as u8, 
+                                (233.0/2.0 * (intensity + 1.0)).round() as u8, 
+                                (0.0/2.0 * (intensity + 1.0)).round() as u8);
+            
+            let color = Color::new( (127.0 * (intensity + 1.0)).round() as u8, 
+                                            (127.0 * (intensity + 1.0)).round() as u8, 
+                                            (127.0 * (intensity + 1.0)).round() as u8);
+            
+            let fcolor = blend(object_color, color);
+            return Some(fcolor);
+        }
+        else{
+            println!("no normals found here.. fix this");
+            return None;
+        }
+    }
+    else{
+        return None;
+    }
+    
 }
 
 /*
 pub fn hit_location(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:&Ray, model:&Model, obj_scale:f64, max_distance:u64)->Option<Vec<u64>>{
-	
-	let limit = lod.limit as i64;
-	let view_limit = view_lod.limit as i64;
-	let mut scale = obj_scale * limit as f64/view_limit as f64; //scale of object to LOD to view lod
-	let mut length = 0.0;
-	while length < max_distance as f64{
-		let photon = ray.at_length(length);
-		let model_loc = Vector::new(model.location.x as f64, model.location.y as f64, model.location.z as f64);
-		let photon_rel = model_loc.subtract(&photon);
-		let photon_scale = photon_rel.scale(scale).as_point();
-		if location::is_bounded(lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
-			let vec_location = location::from_xyz(lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
-			//let (iteration, hit) = model.normal.is_location_occupied_iterative(&vec_location);
-			let (iteration, hit) = model.normal.is_location_occupied(&vec_location);
-			if hit {
-				return Some(vec_location);
-			}
-		}
-		length += 1.0;
-	}
-	None
+    
+    let limit = lod.limit as i64;
+    let view_limit = view_lod.limit as i64;
+    let mut scale = obj_scale * limit as f64/view_limit as f64; //scale of object to LOD to view lod
+    let mut length = 0.0;
+    while length < max_distance as f64{
+        let photon = ray.at_length(length);
+        let model_loc = Vector::new(model.location.x as f64, model.location.y as f64, model.location.z as f64);
+        let photon_rel = model_loc.subtract(&photon);
+        let photon_scale = photon_rel.scale(scale).as_point();
+        if location::is_bounded(lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
+            let vec_location = location::from_xyz(lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
+            //let (iteration, hit) = model.normal.is_location_occupied_iterative(&vec_location);
+            let (iteration, hit) = model.normal.is_location_occupied(&vec_location);
+            if hit {
+                return Some(vec_location);
+            }
+        }
+        length += 1.0;
+    }
+    None
 }
 */
 /*
 pub fn hit_location(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:&Ray, model:&Model, obj_scale:f64, max_distance:u64)->Option<Vec<u64>>{
-	
-	let limit = lod.limit as i64;
-	let view_limit = view_lod.limit as i64;
-	let scale = obj_scale * limit as f64/view_limit as f64; //scale of object to LOD to view lod
-	let mut length = 0.0;
-	let model_loc = Vector::new(model.location.x as f64, model.location.y as f64, model.location.z as f64);
-	let model_loc = model_loc.scale(scale);	
-	let new_lod = lod.lod - 1;
-	let new_lod = LOD::new(new_lod);
-	while length < max_distance as f64{
-		let photon = ray.at_length(scale, length);
-		let photon_rel = model_loc.subtract(&photon);
-		let photon_scale = photon_rel.clone().as_point();
-		
-		if location::is_bounded(lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
-		//if location::is_bounded(&new_lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
-			let vec_location = location::from_xyz(lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
-			//let vec_location = location::from_xyz(&new_lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
+    
+    let limit = lod.limit as i64;
+    let view_limit = view_lod.limit as i64;
+    let scale = obj_scale * limit as f64/view_limit as f64; //scale of object to LOD to view lod
+    let mut length = 0.0;
+    let model_loc = Vector::new(model.location.x as f64, model.location.y as f64, model.location.z as f64);
+    let model_loc = model_loc.scale(scale);    
+    let new_lod = lod.lod - 1;
+    let new_lod = LOD::new(new_lod);
+    while length < max_distance as f64{
+        let photon = ray.at_length(scale, length);
+        let photon_rel = model_loc.subtract(&photon);
+        let photon_scale = photon_rel.clone().as_point();
+        
+        if location::is_bounded(lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
+        //if location::is_bounded(&new_lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
+            let vec_location = location::from_xyz(lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
+            //let vec_location = location::from_xyz(&new_lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
 
-			//let vec_location = clamp_location(&vec_location, &new_lod);
-			let (iteration, hit) = model.normal.is_location_occupied(&vec_location);
-			if hit {
-				return Some(vec_location);
-			}
-		}
-		length += scale;
-	}
-	None
+            //let vec_location = clamp_location(&vec_location, &new_lod);
+            let (iteration, hit) = model.normal.is_location_occupied(&vec_location);
+            if hit {
+                return Some(vec_location);
+            }
+        }
+        length += scale;
+    }
+    None
 }
 */
 
 pub fn hit_location(screen:&Screen, lod:&LOD, view_lod:&LOD, ray:&Ray, model:&Model, obj_scale:f64, max_distance:u64)->Option<Vec<u64>>{
-	
-	let low_lod = LOD::new(lod.lod-1);
-	let scale = obj_scale * lod.limit as f64/view_lod.limit as f64; //scale of object to LOD to view lod
-	//let scale = obj_scale * low_lod.limit as f64/view_lod.limit as f64;
-	let mut length = 0.0;
-	let model_loc = Vector::new(model.location.x as f64, model.location.y as f64, model.location.z as f64);
-	let model_loc = model_loc.scale(scale);	
-	while length < max_distance as f64{
-		let photon = ray.at_length(scale, length);
-		let photon_rel = model_loc.subtract(&photon);
-		let photon_scale = photon_rel.clone().as_point();
-		
-		if location::is_bounded(lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
-			let vec_location = location::from_xyz(lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
-			let (iteration, hit) = model.normal.is_location_occupied(&vec_location);
-			if hit {
-				return Some(vec_location);
-			}
-		}
-		length += scale;
-	}
-	None
+    
+    let low_lod = LOD::new(lod.lod-1);
+    let scale = obj_scale * lod.limit as f64/view_lod.limit as f64; //scale of object to LOD to view lod
+    //let scale = obj_scale * low_lod.limit as f64/view_lod.limit as f64;
+    let mut length = 0.0;
+    let model_loc = Vector::new(model.location.x as f64, model.location.y as f64, model.location.z as f64);
+    let model_loc = model_loc.scale(scale);    
+    while length < max_distance as f64{
+        let photon = ray.at_length(scale, length);
+        let photon_rel = model_loc.subtract(&photon);
+        let photon_scale = photon_rel.clone().as_point();
+        
+        if location::is_bounded(lod, photon_scale.x, photon_scale.y, photon_scale.z){ //no more bounds check if the camera is located inside the one-world octree
+            let vec_location = location::from_xyz(lod, photon_scale.x as u64, photon_scale.y as u64, photon_scale.z as u64);
+            //let vec_location = clamp_location(&vec_location, &low_lod);
+            let (iteration, hit) = model.normal.is_location_occupied(&vec_location);
+            if hit {
+                return Some(vec_location);
+            }
+        }
+        length += scale;
+    }
+    None
 }
 
 
 fn clamp_location(location:&Vec<u64>, view_lod:&LOD)->Vec<u64>{
-	let mut clamped = Vec::new();
-	let lod = view_lod.lod;
-	for i in 0..lod{
-		clamped.push(location[i as usize]);
-	}
-	clamped
+    let mut clamped = Vec::new();
+    let lod = view_lod.lod;
+    for i in 0..lod{
+        clamped.push(location[i as usize]);
+    }
+    clamped
 }
 
 //blending the normal color with model color
 fn blend(color1:Color, color2:Color)->Color{
-	let red   =  ((color1.r as f32 + color2.r as f32 )/2.0).round() as u8;
-	let green =  ((color1.g as f32 + color2.g as f32 )/2.0).round() as u8;
-	let blue  =  ((color1.b as f32 + color2.b as f32 )/2.0).round() as u8;
-	Color::new(red, green, blue)
+    let red   =  ((color1.r as f32 + color2.r as f32 )/2.0).round() as u8;
+    let green =  ((color1.g as f32 + color2.g as f32 )/2.0).round() as u8;
+    let blue  =  ((color1.b as f32 + color2.b as f32 )/2.0).round() as u8;
+    Color::new(red, green, blue)
 }
 
 //http://www.iquilezles.org/www/articles/outdoorslighting/outdoorslighting.htm
 //http://stackoverflow.com/questions/16521003/gamma-correction-formula-gamma-or-1-gamma
 //Corrected = 255 * (Image/255)^(1/2.2).
 fn gamma_correction(color:Color)->Color{
-	let gamma = 1.0/2.2;
-	let red = (255.0 * (color.r as f64 / 255.0).powf(gamma)).round() as u8;
-	let green = (255.0 * (color.g as f64 / 255.0).powf(gamma)).round() as u8;
-	let blue = (255.0 * (color.b as f64 / 255.0).powf(gamma)).round() as u8;
-	Color::new(red, green, blue)
+    let gamma = 1.0/2.2;
+    let red = (255.0 * (color.r as f64 / 255.0).powf(gamma)).round() as u8;
+    let green = (255.0 * (color.g as f64 / 255.0).powf(gamma)).round() as u8;
+    let blue = (255.0 * (color.b as f64 / 255.0).powf(gamma)).round() as u8;
+    Color::new(red, green, blue)
 }
 

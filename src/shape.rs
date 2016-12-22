@@ -47,17 +47,17 @@ impl Shape for Sphere{
 
      fn is_inside(&self, x:i64, y:i64, z:i64)->bool{
         let xf = (x - self.center.x) as f64;
-		let yf = (y - self.center.y) as f64;
-		let zf = (z - self.center.z) as f64;
-		let rad = (xf*xf + yf*yf + zf*zf).sqrt().round() as u64;
-		
-		if rad <= self.radius {//solid, caution: uses a lot of memory
-		//if rad == self.radius {//very thin carved
-		//if rad <= self.radius && rad >= (self.radius - 1)  {//carved out, 2 inner walls down
-		//if rad <= self.radius && rad >= (self.radius - 2)  {//carved out, 2 inner walls down
-			return true;
-		}
-		false
+        let yf = (y - self.center.y) as f64;
+        let zf = (z - self.center.z) as f64;
+        let rad = (xf*xf + yf*yf + zf*zf).sqrt().round() as u64;
+        
+        if rad <= self.radius {//solid, caution: uses a lot of memory
+        //if rad == self.radius {//very thin carved
+        //if rad <= self.radius && rad >= (self.radius - 1)  {//carved out, 2 inner walls down
+        //if rad <= self.radius && rad >= (self.radius - 2)  {//carved out, 2 inner walls down
+            return true;
+        }
+        false
     }
     
     fn normal(&self, x:i64, y:i64, z:i64)->Normal{
@@ -90,22 +90,22 @@ impl Cube{
     }
     
     fn is_inside_private(&self, x:i64, y:i64, z:i64)->bool{
-		if x >= self.lower.x && x <= self.upper.x &&
+        if x >= self.lower.x && x <= self.upper.x &&
            y >= self.lower.y && y <= self.upper.y &&
-		   z >= self.lower.z && z <= self.upper.z {//solid
-			return true;
-		}
-	   false
-	}
+           z >= self.lower.z && z <= self.upper.z {//solid
+            return true;
+        }
+       false
+    }
     
     fn is_outside_private(&self, x:i64, y:i64, z:i64, inset:i64)->bool{
-		if x < (self.lower.x + inset) || x > (self.upper.x - inset) ||
+        if x < (self.lower.x + inset) || x > (self.upper.x - inset) ||
            y < (self.lower.y + inset) || y > (self.upper.y - inset) ||
-		   z < (self.lower.z + inset) || z > (self.upper.z - inset) {//solid
-			return true;
-		}
-	   false
-	}
+           z < (self.lower.z + inset) || z > (self.upper.z - inset) {//solid
+            return true;
+        }
+       false
+    }
 }
 
 
@@ -113,8 +113,8 @@ impl Cube{
 impl Shape for Cube{
 
     fn is_inside(&self, x:i64, y:i64, z:i64)->bool{
-		self.is_inside_private(x,y,z) && self.is_outside_private(x,y,z,1)//carved
-		//self.is_inside_private(x,y,z)//solid
+        self.is_inside_private(x,y,z) && self.is_outside_private(x,y,z,1)//carved
+        //self.is_inside_private(x,y,z)//solid
     }
     
     //TODO:
@@ -128,33 +128,33 @@ impl Shape for Cube{
     // back   0,  0, -1  z >= self.lower.z && z < self.lower.z - inset
 
     fn normal(&self, x:i64, y:i64, z:i64)->Normal{
-    	let inset = 1;
+        let inset = 1;
         if x <= self.upper.x && x > self.upper.x - inset{//right
-			let vec = Vector::new(1.0, 0.0, 0.0);
-			return Normal::from_vector(&vec);
+            let vec = Vector::new(1.0, 0.0, 0.0);
+            return Normal::from_vector(&vec);
         }
-		else if x >= self.lower.x && x < self.lower.x - inset{//left
-			let vec = Vector::new(-1.0, 0.0, 0.0);
-			return Normal::from_vector(&vec);
-		}
-		else if y <= self.upper.y && y > self.upper.y - inset{//up
-			let vec = Vector::new(0.0, 1.0, 0.0);
-			return Normal::from_vector(&vec);
-		}
-		else if y >= self.lower.y && y < self.lower.y - inset{//down
-			let vec = Vector::new(0.0, -1.0, 0.0);
-			return Normal::from_vector(&vec);
-		}
-		else if z <= self.upper.y && z > self.upper.z - inset{//front
-			let vec = Vector::new(0.0, 0.0, 1.0);
-			return Normal::from_vector(&vec);
-		}
-		else if z >= self.lower.z && z < self.lower.z - inset{//back
-			let vec = Vector::new(0.0, 0.0, -1.0);
-			return Normal::from_vector(&vec);
-		}
-		let vec = Vector::new(-1.0, 0.0, 0.0);
-		return Normal::from_vector(&vec);
+        else if x >= self.lower.x && x < self.lower.x - inset{//left
+            let vec = Vector::new(-1.0, 0.0, 0.0);
+            return Normal::from_vector(&vec);
+        }
+        else if y <= self.upper.y && y > self.upper.y - inset{//up
+            let vec = Vector::new(0.0, 1.0, 0.0);
+            return Normal::from_vector(&vec);
+        }
+        else if y >= self.lower.y && y < self.lower.y - inset{//down
+            let vec = Vector::new(0.0, -1.0, 0.0);
+            return Normal::from_vector(&vec);
+        }
+        else if z <= self.upper.y && z > self.upper.z - inset{//front
+            let vec = Vector::new(0.0, 0.0, 1.0);
+            return Normal::from_vector(&vec);
+        }
+        else if z >= self.lower.z && z < self.lower.z - inset{//back
+            let vec = Vector::new(0.0, 0.0, -1.0);
+            return Normal::from_vector(&vec);
+        }
+        let vec = Vector::new(-1.0, 0.0, 0.0);
+        return Normal::from_vector(&vec);
     }
 
 /*

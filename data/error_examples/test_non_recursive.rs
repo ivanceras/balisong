@@ -25,9 +25,9 @@ use balisong::octree::Octree;
 use balisong::location;
 
 fn main(){
-	let mut node = Octree::new();
-	let lod  = 5;
-	let loc = location::from_xyz(lod, 1,2,3);
-	location::display(&loc);
-	node.set_tree_non_recursive(&loc, &mut Some(true));
+    let mut node = Octree::new();
+    let lod  = 5;
+    let loc = location::from_xyz(lod, 1,2,3);
+    location::display(&loc);
+    node.set_tree_non_recursive(&loc, &mut Some(true));
 }
